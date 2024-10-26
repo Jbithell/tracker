@@ -15,8 +15,23 @@ export const loader = async () => redirect("/");
 
 const validator = withZod(
   zod.object({
-    location: zod.object({}),
-    battery: zod.object({}),
+    location: zod.object({
+      coords: zod.object({
+        accuracy: zod.number(),
+        longitude: zod.number(),
+        altitude: zod.number(),
+        heading: zod.number(),
+        latitude: zod.number(),
+        altitudeAccuracy: zod.number(),
+        speed: zod.number(),
+      }),
+      mocked: zod.boolean(),
+      timestamp: zod.number(),
+    }),
+    battery: zod.object({
+      percentage: zod.number(),
+      charging: zod.boolean(),
+    }),
   })
 );
 
