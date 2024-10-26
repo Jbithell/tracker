@@ -1,0 +1,30 @@
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch Name to run migrations of"
+        required: true
+        type: string
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+name: Run migrations on preview database from a given branch
+run-name: ${{ github.actor }} ran migrations from the ${{ inputs.BRANCH }} branch on the preview database
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    name: Run migrations
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH }}
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "3.51.0"
+          packageManager: npm
+          command: d1 migrations apply DB --preview --remote=true

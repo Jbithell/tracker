@@ -1,0 +1,33 @@
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+name: Reset the preview database to base state
+run-name: ${{ github.actor }} reset the preview database
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    name: Reset database
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Drop tables
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "3.51.0"
+          packageManager: npm
+          command: d1 execute DB --preview --remote=true --file='./app/db/fixtures/reset.sql'
+      - name: Run migrations from main branch
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "3.51.0"
+          packageManager: npm
+          command: d1 migrations apply DB --preview --remote=true"
