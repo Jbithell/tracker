@@ -5,6 +5,10 @@ on:
       - synchronize
       - reopened
 
+defaults:
+  run:
+    working-directory: website
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -30,7 +34,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: npm
-          command: pages deploy ./build/client --project-name=jbithell-tracker --commit-dirty=true
+          command: pages deploy ./build/client --project-name=event-tracker --commit-dirty=true
       - uses: actions/github-script@v6
         with:
           script: |
@@ -38,5 +42,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Built preview on Cloudflare Pages: ${{ steps.deploy.outputs.deployment-url }} [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}). [Run Migrations](https://github.com/bstudios/telemetry-and-analytics/actions/workflows/migrate-preview-d1.yml) or [Reset Preview DB](https://github.com/bstudios/telemetry-and-analytics/actions/workflows/reset-preview-d1.yml)'
+              body: 'Built preview on Cloudflare Pages: ${{ steps.deploy.outputs.deployment-url }} [Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).'
             })

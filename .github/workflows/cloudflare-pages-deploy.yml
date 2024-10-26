@@ -3,6 +3,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    working-directory: website
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -28,7 +32,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "3.51.0"
           packageManager: npm
-          command: pages deploy ./build/client --project-name=jbithell-tracker --commit-dirty=true
+          command: pages deploy ./build/client --project-name=event-tracker --commit-dirty=true
           postCommands: |
             echo "*** Running D1 Migrations ***"
             wrangler d1 migrations apply DB --remote

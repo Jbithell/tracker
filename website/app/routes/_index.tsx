@@ -1,65 +1,68 @@
 import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/cloudflare";
+import { db } from "../d1client.server";
+import { Link, useLoaderData } from "@remix-run/react";
+import { and, eq, gte, isNotNull, lt, max } from "drizzle-orm";
+import {
   Button,
   Card,
   Container,
   Group,
   Image,
-  List,
-  SimpleGrid,
+  Table,
   Text,
   Title,
 } from "@mantine/core";
-import type { MetaFunction } from "@remix-run/cloudflare";
-import AdamRMSLogo from "~/components/AdamRMS/logo.svg";
-import { Link } from "@remix-run/react";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconArrowUpRight, IconLock } from "@tabler/icons-react";
+import { Events } from "~/db/schema/Events";
 export const meta: MetaFunction = () => {
-  return [{ title: "Bithell Studios Telemetry and Analytics Platform" }];
+  return [{ title: "Tracking" }];
+};
+
+export const loader = async ({ context }: LoaderFunctionArgs) => {
+  const { env } = context.cloudflare;
+  const date = new Date();
+  date.setDate(date.getDate() - 90);
+  const events = await db(env.DB)
+    .select({
+      timestamp: Events.timestamp,
+      data: Events.data,
+    })
+    .from(Events)
+    .where(and(gte(Events.timestamp, date)));
+
+  return json({
+    events,
+  });
 };
 
 export default function Index() {
+  const data = useLoaderData<typeof loader>();
   return (
-    <Container mt={"lg"}>
-      <Title order={1} mb={"md"}>
-        Bithell Studios Telemetry and Analytics
-      </Title>
-      <Text mb={"md"}>
-        This open-source platform collects telemetry data from open-source
-        applications, such as AdamRMS. It also allows you to track your own
-        open-source projects, by sending telemetry data to this platform.
-      </Text>
-      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing={50} mt={30}>
-        <Card withBorder padding="lg">
-          <Card.Section>
-            <Image
-              w="fill"
-              fit="contain"
-              src={AdamRMSLogo}
-              alt="AdamRMS Logo"
-            />
-          </Card.Section>
-
-          <Group justify="space-between" mt="xl">
-            <Text fz="sm" fw={700}>
-              AdamRMS
-            </Text>
-            <Group gap={5}>
-              <Link to="/projects/adam-rms">
-                <Button
-                  variant="light"
-                  rightSection={<IconArrowRight size={14} />}
-                >
-                  View project
-                </Button>
-              </Link>
-            </Group>
-          </Group>
-          <Text mt="sm" mb="md" c="dimmed" fz="xs">
-            AdamRMS is a free, open source advanced Rental Management System for
-            Theatre, AV & Broadcast
-          </Text>
-        </Card>
-      </SimpleGrid>
+    <Container mt={"xl"}>
+      {data.events.length === 0 ? (
+        <Title>No data available</Title>
+      ) : (
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Td>Timestamp</Table.Td>
+              <Table.Td>Data</Table.Td>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {data.events.map((event) => (
+              <Table.Tr key={event.timestamp}>
+                <Table.Td>{event.timestamp}</Table.Td>
+                <Table.Td>{JSON.stringify(event.data)}</Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      )}
     </Container>
   );
 }

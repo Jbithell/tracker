@@ -29,7 +29,6 @@ import {
   MantineColorsTuple,
 } from "@mantine/core";
 import classes from "./components/ErrorBoundary.module.css";
-import { Navbar } from "./components/Navbar";
 
 const myColor: MantineColorsTuple = [
   "#ffe9f0",
@@ -74,10 +73,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const navigating = useNavigation();
   return (
-    <AppShell header={{ height: 60 }} padding="md">
-      <AppShell.Header>
-        <Navbar />
-      </AppShell.Header>
+    <AppShell header={{ height: 0 }} padding="md">
       <AppShell.Main>
         <LoadingOverlay
           visible={navigating.state === "loading"}

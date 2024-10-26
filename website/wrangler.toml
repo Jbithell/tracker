@@ -1,30 +1,30 @@
 # After editing this file run npm run typegen to regenerate the types
-name = "jbithell-tracker"
+name = "event-tracker"
 pages_build_output_dir = "public"
-compatibility_date = "2023-12-31"
+compatibility_date = "2024-10-26"
 send_metrics = true 
 
 # This is used by wrangler to figure out which is preview and which isn't
 [[d1_databases]]
 binding = "DB"
-database_id = "67e79b07-81ca-4e5c-ab60-323e45555e11"
-preview_database_id = "572b82f0-c3c2-4f55-aa10-39d902a3959f"
-database_name = "bithellstudios-telemetry-analytics-prod"
+database_id = "36028421-7297-4ee3-a6e2-39fe38bb2170"
+preview_database_id = "e6d9555e-11f9-4469-9293-61927ddf4f73"
+database_name = "event-tracker-prod"
 migrations_table = "migrations"
 migrations_dir = "migrations"
 
 # Applies to both the local and the preview environments (but not the production environment) - ie PR previews etc. Normally when developing locally though you are using a local db
 [[env.preview.d1_databases]]
-database_id = "572b82f0-c3c2-4f55-aa10-39d902a3959f"
+database_id = "e6d9555e-11f9-4469-9293-61927ddf4f73"
 binding = "DB"
-database_name = "bithellstudios-telemetry-analytics-preview"
+database_name = "event-tracker-preview"
 migrations_table = "migrations" # Customize this value to change your applied migrations table name
 migrations_dir = "migrations"
 
 # Apply only to the production environment
 [[env.production.d1_databases]]
-database_id = "67e79b07-81ca-4e5c-ab60-323e45555e11"
+database_id = "36028421-7297-4ee3-a6e2-39fe38bb2170"
 binding = "DB"
-database_name = "bithellstudios-telemetry-analytics-prod"
+database_name = "event-tracker-prod"
 migrations_table = "migrations" # Customize this value to change your applied migrations table name
 migrations_dir = "migrations"

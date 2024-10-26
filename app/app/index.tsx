@@ -41,7 +41,10 @@ if (
         content: {
           title: "Tracker location sent",
           sound: false,
-          body: "Location sent at " + new Date().toLocaleTimeString(),
+          body:
+            "Location sent at " +
+            new Date().toLocaleTimeString() +
+            JSON.stringify(data),
         },
         trigger: null,
       });

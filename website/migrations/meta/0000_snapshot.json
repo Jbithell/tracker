@@ -1,124 +1,11 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "ccd363cc-b631-4a20-b169-bec408531f2a",
+  "id": "8b4f9908-41af-43d6-a11f-fa2bdbc0e714",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "adamrmsinstallations": {
-      "name": "adamrmsinstallations",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "uuid": {
-          "name": "uuid",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "firstheardtimestamp": {
-          "name": "firstheardtimestamp",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "latestheardtimestamp": {
-          "name": "latestheardtimestamp",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "rooturl": {
-          "name": "rooturl",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "location": {
-          "name": "location",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "asn": {
-          "name": "asn",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "devmode": {
-          "name": "devmode",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "hidden": {
-          "name": "hidden",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "userdefinedstring": {
-          "name": "userdefinedstring",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "version": {
-          "name": "version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": {
-            "instances": false,
-            "users": false,
-            "assetsCount": false,
-            "assetsValueUSD": false,
-            "assetsMassKg": false
-          }
-        }
-      },
-      "indexes": {
-        "adamrmsinstallations_uuid_unique": {
-          "name": "adamrmsinstallations_uuid_unique",
-          "columns": [
-            "uuid"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "adamrmstimeseries": {
-      "name": "adamrmstimeseries",
+    "events": {
+      "name": "events",
       "columns": {
         "id": {
           "name": "id",
@@ -135,33 +22,12 @@
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "installationId": {
-          "name": "installationId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "version": {
-          "name": "version",
+        "data": {
+          "name": "data",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": {
-            "instances": false,
-            "users": false,
-            "assetsCount": false,
-            "assetsValueUSD": false,
-            "assetsMassKg": false
-          }
         }
       },
       "indexes": {},

@@ -13,7 +13,7 @@ const requestPermissions = async () => {
     if (backgroundStatus === "granted") {
       await Location.startLocationUpdatesAsync("background-location-task", {
         accuracy: Location.Accuracy.Highest,
-        timeInterval: 5000,
+        timeInterval: 30000, // 30 seconds
         showsBackgroundLocationIndicator: true,
         foregroundService: {
           killServiceOnDestroy: false,
