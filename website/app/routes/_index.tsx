@@ -41,6 +41,7 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
+  
   return (
     <Container mt={"xl"}>
       {data.events.length === 0 ? (
@@ -50,7 +51,8 @@ export default function Index() {
           <Table.Thead>
             <Table.Tr>
               <Table.Td>Timestamp</Table.Td>
-              <Table.Td>Data</Table.Td>
+              <Table.Td>Location</Table.Td>
+              <Table.Td>Battery</Table.Td>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>

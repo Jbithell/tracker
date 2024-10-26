@@ -1,10 +1,6 @@
 on:
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: website
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
@@ -22,6 +18,7 @@ jobs:
       - name: Drop tables
         uses: cloudflare/wrangler-action@v3
         with:
+          workingDirectory: "website"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "3.51.0"
@@ -30,6 +27,7 @@ jobs:
       - name: Run migrations from main branch
         uses: cloudflare/wrangler-action@v3
         with:
+          workingDirectory: "website"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "3.51.0"

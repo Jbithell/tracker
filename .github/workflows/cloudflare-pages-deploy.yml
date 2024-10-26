@@ -3,10 +3,6 @@ on:
     branches:
       - main
 
-defaults:
-  run:
-    working-directory: website
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -21,15 +17,17 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: npm
       - run: npm install
+        working-directory: ./website
       - name: Build
         run: npm run build
+        working-directory: ./website
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: "website"
           wranglerVersion: "3.51.0"
           packageManager: npm
           command: pages deploy ./build/client --project-name=event-tracker --commit-dirty=true
