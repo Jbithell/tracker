@@ -5,9 +5,7 @@ import { baseStyles } from "./baseStyles";
 import { sendLocation } from "./sendLocation";
 
 const SendTestButton = () => {
-  const [settingUpTask, setSettingUpTask] = useState(false);
-  if (settingUpTask)
-    return <Text style={baseStyles.text}>Stopping task...</Text>;
+  const [sending, setSending] = useState(false);
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
@@ -16,6 +14,8 @@ const SendTestButton = () => {
   }).then((location) => {
     setLocation(location);
   });
+  if (sending)
+    return <Text style={baseStyles.text}>Sending manual update...</Text>;
   if (location === null) return;
   return (
     <>
@@ -31,7 +31,8 @@ const SendTestButton = () => {
       <Pressable
         style={baseStyles.button}
         onPress={() => {
-          sendLocation(location);
+          sendLocation(location).then((response) => setSending(false));
+          setSending(true);
         }}
       >
         <Text style={baseStyles.buttonText}>Send location manually now</Text>
