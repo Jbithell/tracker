@@ -4,18 +4,8 @@ import {
   type MetaFunction,
 } from "@remix-run/cloudflare";
 import { db } from "../d1client.server";
-import { Link, useLoaderData } from "@remix-run/react";
-import { and, eq, gte, isNotNull, lt, max, asc } from "drizzle-orm";
-import {
-  Button,
-  Card,
-  Container,
-  Group,
-  Image,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
+import { useLoaderData } from "@remix-run/react";
+import { and, gte, desc } from "drizzle-orm";
 import { Events } from "~/db/schema/Events";
 import { LiveMap } from "~/components/LiveMap/LiveMap";
 export const meta: MetaFunction = () => {
@@ -33,8 +23,9 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
       data: Events.data,
     })
     .from(Events)
-    .orderBy(asc(Events.timestamp))
-    .where(and(gte(Events.timestamp, date.getUTCMilliseconds())));
+    .orderBy(desc(Events.timestamp))
+    .where(and(gte(Events.timestamp, date.getUTCMilliseconds())))
+    .limit(50);
 
   return json({
     events,
