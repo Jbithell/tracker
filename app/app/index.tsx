@@ -48,14 +48,6 @@ if (
       locations.forEach((location) => {
         sendLocation(location);
       });
-      Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Tracker location sent",
-          sound: false,
-          body: "Location sent at " + new Date().toLocaleTimeString(),
-        },
-        trigger: null,
-      });
     }
   });
 }
