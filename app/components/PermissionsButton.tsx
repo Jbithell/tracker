@@ -12,9 +12,11 @@ const requestPermissions = async () => {
       await Location.requestBackgroundPermissionsAsync();
     if (backgroundStatus === "granted") {
       await Location.startLocationUpdatesAsync("background-location-task", {
-        accuracy: Location.Accuracy.Highest,
-        timeInterval: 30000, // 30 seconds
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: 5000, // 5 seconds
         showsBackgroundLocationIndicator: true,
+        deferredUpdatesDistance: 0, // The distance in meters that must occur between last reported location and the current location before deferred locations are reported.
+        deferredUpdatesInterval: 100, // Minimum time interval in milliseconds that must pass since last reported location before all later locations are reported in a batched update
         foregroundService: {
           killServiceOnDestroy: false,
           notificationTitle: "Tracker",

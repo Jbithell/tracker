@@ -17,13 +17,13 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-Notifications.scheduleNotificationAsync({
-  content: {
-    sound: false,
-    body: "Tracker app opened at " + new Date().toLocaleTimeString(),
-  },
-  trigger: null,
-});
+// Notifications.scheduleNotificationAsync({
+//   content: {
+//     sound: false,
+//     body: "App opened at " + new Date().toLocaleTimeString(),
+//   },
+//   trigger: null,
+// });
 const REFRESH_TASK_DEFINITION = true;
 if (
   !TaskManager.isTaskDefined("background-location-task") ||
@@ -33,25 +33,28 @@ if (
   TaskManager.defineTask("background-location-task", ({ data, error }) => {
     console.log("Task executed");
     if (error) {
-      console.error(error.message);
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Error sending tracking location",
+          sound: false,
+          body: error.message,
+        },
+        trigger: null,
+      });
       return;
     }
     if (data) {
+      const locations = data.locations as Array<Location.LocationObject>;
+      locations.forEach((location) => {
+        sendLocation(location);
+      });
       Notifications.scheduleNotificationAsync({
         content: {
           title: "Tracker location sent",
           sound: false,
-          body:
-            "Location sent at " +
-            new Date().toLocaleTimeString() +
-            JSON.stringify(data),
+          body: "Location sent at " + new Date().toLocaleTimeString(),
         },
         trigger: null,
-      });
-      const locations = data.locations as Array<Location.LocationObject>;
-      console.log("Locations:", locations);
-      locations.forEach((location) => {
-        sendLocation(location);
       });
     }
   });
@@ -96,7 +99,10 @@ const Status = () => {
   else
     return (
       <>
-        <Text style={baseStyles.text}>Sending location in background</Text>
+        <Text style={baseStyles.text}>
+          Sending location in background. You can lock the device now, but don't
+          close the app
+        </Text>
         <StopButton setTaskStatus={setTaskStatus} />
       </>
     );
