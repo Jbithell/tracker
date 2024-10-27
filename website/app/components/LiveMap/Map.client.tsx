@@ -1,5 +1,14 @@
-import { Button, MantineProvider, Text, ThemeIcon, Title } from "@mantine/core";
 import {
+  Button,
+  Group,
+  MantineProvider,
+  Text,
+  ThemeIcon,
+  Title,
+} from "@mantine/core";
+import {
+  IconBrandApple,
+  IconBrandGoogleMaps,
   IconCar,
   IconCompass,
   IconCurrentLocation,
@@ -23,7 +32,7 @@ import {
 import { MapProps } from "./LiveMap";
 import { useViewportSize } from "@mantine/hooks";
 import { theme } from "~/root";
-import { useRevalidator } from "@remix-run/react";
+import { Link, useRevalidator } from "@remix-run/react";
 import { DateTime } from "luxon";
 import { useState } from "react";
 
@@ -46,29 +55,19 @@ const ReCentreButton = (props: {
 }) => {
   const map = useMap();
   return (
-    <div className="leaflet-bottom leaflet-left">
-      <div className="leaflet-control leaflet-bar">
-        <Button
-          onClick={() =>
-            map.setView(new LatLng(props.lat, props.lon), props.zoom)
-          }
-        >
-          <IconCurrentLocation />
-        </Button>
-      </div>
-    </div>
+    <Button
+      onClick={() => map.setView(new LatLng(props.lat, props.lon), props.zoom)}
+    >
+      <IconCurrentLocation />
+    </Button>
   );
 };
 const RefreshButton = () => {
   const revalidator = useRevalidator();
   return (
-    <div className="leaflet-top leaflet-right">
-      <div className="leaflet-control leaflet-bar">
-        <Button onClick={() => revalidator.revalidate()}>
-          <IconRefresh />
-        </Button>
-      </div>
-    </div>
+    <Button onClick={() => revalidator.revalidate()}>
+      <IconRefresh />
+    </Button>
   );
 };
 const ThisUserCurrentLocation = (props: { icon: DivIcon }) => {
@@ -185,14 +184,50 @@ export const Map = (props: MapProps) => {
                   zone: "local",
                 }).toLocaleString(DateTime.DATETIME_MED)}
               </Text>
+              <Link
+                to={`https://www.google.com/maps?q=${highestTimestampPin.latitude},${highestTimestampPin.longitude}`}
+                target="_blank"
+              >
+                <Button
+                  size="xs"
+                  m="xs"
+                  rightSection={
+                    <IconBrandGoogleMaps
+                      style={{ width: "70%", height: "70%" }}
+                    />
+                  }
+                >
+                  Google Maps
+                </Button>
+              </Link>
+              <Link
+                to={`https://maps.apple.com/?q=${highestTimestampPin.latitude},${highestTimestampPin.longitude}`}
+                target="_blank"
+              >
+                <Button
+                  size="xs"
+                  m="xs"
+                  rightSection={
+                    <IconBrandApple style={{ width: "70%", height: "70%" }} />
+                  }
+                >
+                  Apple Maps
+                </Button>
+              </Link>
             </Popup>
           </Marker>
-          <ReCentreButton
-            lat={highestTimestampPin.latitude}
-            lon={highestTimestampPin.longitude}
-            zoom={props.zoom}
-          />
-          <RefreshButton />
+          <div className="leaflet-top leaflet-right">
+            <div className="leaflet-control leaflet-bar">
+              <Group>
+                <ReCentreButton
+                  lat={highestTimestampPin.latitude}
+                  lon={highestTimestampPin.longitude}
+                  zoom={props.zoom}
+                />
+                <RefreshButton />
+              </Group>
+            </div>
+          </div>
         </MapContainer>
       </div>
     );
