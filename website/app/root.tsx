@@ -43,7 +43,7 @@ const myColor: MantineColorsTuple = [
   "#a9002f",
 ];
 
-const theme = createTheme({
+export const theme = createTheme({
   primaryColor: "pink",
   colors: {
     pink: myColor,
@@ -73,7 +73,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const navigating = useNavigation();
   return (
-    <AppShell header={{ height: 0 }} padding="md">
+    <AppShell header={{ height: 0 }} padding={0}>
       <AppShell.Main>
         <LoadingOverlay
           visible={navigating.state === "loading"}

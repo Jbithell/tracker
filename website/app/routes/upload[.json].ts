@@ -52,10 +52,18 @@ export const action = async ({ context, request }: ActionFunctionArgs) => {
   const insertTimeSeries = await db(env.DB)
     .insert(Events)
     .values({
-      timestamp: new Date(),
+      timestamp: validated.data.location.timestamp,
       data: {
-        location: validated.data.location || false,
-        battery: validated.data.battery || false,
+        location: {
+          accuracy: validated.data.location.coords.accuracy,
+          longitude: validated.data.location.coords.longitude,
+          altitude: validated.data.location.coords.altitude,
+          heading: validated.data.location.coords.heading,
+          latitude: validated.data.location.coords.latitude,
+          altitudeAccuracy: validated.data.location.coords.altitudeAccuracy,
+          speed: validated.data.location.coords.speed,
+        },
+        battery: validated.data.battery,
       },
     });
   if (insertTimeSeries.error)

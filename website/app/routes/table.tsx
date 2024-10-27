@@ -5,7 +5,7 @@ import {
 } from "@remix-run/cloudflare";
 import { db } from "../d1client.server";
 import { Link, useLoaderData } from "@remix-run/react";
-import { and, eq, gte, isNotNull, lt, max, asc } from "drizzle-orm";
+import { and, eq, gte, isNotNull, lt, max, asc, desc } from "drizzle-orm";
 import {
   Button,
   Card,
@@ -26,36 +26,46 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
   const { env } = context.cloudflare;
   const date = new Date();
   date.setDate(date.getDate() - 90);
-
   const events = await db(env.DB)
     .select({
       timestamp: Events.timestamp,
       data: Events.data,
     })
     .from(Events)
-    .orderBy(asc(Events.timestamp))
-    .where(and(gte(Events.timestamp, date.getUTCMilliseconds())));
+    .orderBy(desc(Events.timestamp))
+    .where(and(gte(Events.timestamp, date)));
 
   return json({
     events,
   });
 };
-export default function Index() {
+
+export default function Page() {
   const data = useLoaderData<typeof loader>();
+
   return (
-    <LiveMap
-      zoom={13}
-      pins={data.events
-        .filter(
-          (event) =>
-            "latitude" in event.data.location &&
-            "longitude" in event.data.location
-        )
-        .map((event) => ({
-          latitude: event.data.location.latitude,
-          longitude: event.data.location.longitude,
-          timestamp: event.timestamp,
-        }))}
-    />
+    <Container>
+      {data.events.length === 0 ? (
+        <Title>No data available</Title>
+      ) : (
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Td>Timestamp</Table.Td>
+              <Table.Td>Location</Table.Td>
+              <Table.Td>Battery</Table.Td>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {data.events.map((event) => (
+              <Table.Tr key={event.timestamp}>
+                <Table.Td>{event.timestamp}</Table.Td>
+                <Table.Td>{JSON.stringify(event.data)}</Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      )}
+    </Container>
   );
 }
