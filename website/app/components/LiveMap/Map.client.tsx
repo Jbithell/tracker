@@ -81,7 +81,7 @@ const ThisUserCurrentLocation = (props: { icon: DivIcon }) => {
     },
   });
   return position === null ? null : (
-    <Marker position={position} icon={props.icon}>
+    <Marker position={position} icon={props.icon} zIndexOffset={900}>
       <Popup>Your location</Popup>
     </Marker>
   );
@@ -167,6 +167,7 @@ export const Map = (props: MapProps) => {
               highestTimestampPin.latitude,
               highestTimestampPin.longitude,
             ]}
+            zIndexOffset={1000}
             icon={tablerMapIcon(
               <ThemeIcon radius="md" size="lg">
                 <IconCar style={{ width: "70%", height: "70%" }} />
