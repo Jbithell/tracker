@@ -5,7 +5,18 @@ import {
 } from "@remix-run/cloudflare";
 import { db } from "../d1client.server";
 import { Link, useFetcher, useLoaderData, useParams } from "@remix-run/react";
-import { and, eq, gte, isNotNull, lt, max, asc, desc, gt } from "drizzle-orm";
+import {
+  and,
+  eq,
+  gte,
+  isNotNull,
+  lt,
+  max,
+  asc,
+  desc,
+  gt,
+  sql,
+} from "drizzle-orm";
 import {
   Button,
   Card,
@@ -46,8 +57,14 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     .orderBy(desc(Events.id))
     .where(cursor ? lt(Events.id, parseInt(cursor)) : undefined)
     .limit(pageLength);
+
+  const count = await db(env.DB)
+    .select({ count: sql<number>`count(*)` })
+    .from(Events);
+
   return json({
     events,
+    count: count[0].count,
   });
 };
 
@@ -55,7 +72,6 @@ export default function Page() {
   const data = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof loader>();
   const [events, setEvents] = useState(data.events);
-  const [recordsExhausted, setRecordsExhausted] = useState(false);
   /**
    * Resources in the worker are limited, so we need to use infinite scroll
    **/
@@ -65,10 +81,6 @@ export default function Page() {
     }
     // If we have new data - append it
     if (fetcher.data) {
-      if (fetcher.data.events.length === 0) {
-        setRecordsExhausted(true);
-        return;
-      }
       const newItems = fetcher.data.events;
       setEvents((prevEvents) => [...prevEvents, ...newItems]);
     }
@@ -134,9 +146,13 @@ export default function Page() {
                       <IconBrandApple />
                     </Link>
                   </Table.Td>
-                  <Table.Td>{event.data.location.heading}</Table.Td>
-                  <Table.Td>{event.data.location.speed} m/s</Table.Td>
-                  <Table.Td>{event.data.location.altitude} m</Table.Td>
+                  <Table.Td>{Math.round(event.data.location.heading)}</Table.Td>
+                  <Table.Td>
+                    {event.data.location.speed.toFixed(2)} m/s
+                  </Table.Td>
+                  <Table.Td>
+                    {Math.round(event.data.location.altitude)} m
+                  </Table.Td>
                   <Table.Td>
                     {event.data.battery.percentage}%
                     {event.data.battery.charging ? " (charging)" : ""}
@@ -147,7 +163,7 @@ export default function Page() {
             <Table.Tfoot>
               <Table.Tr>
                 <Table.Td colSpan={9}>
-                  {recordsExhausted ? (
+                  {data.count === events.length ? (
                     <Text>
                       All {events.length} record{events.length !== 0 ? "s" : ""}{" "}
                       shown
@@ -157,7 +173,7 @@ export default function Page() {
                       onClick={() => loadNext()}
                       loading={fetcher.state === "loading"}
                     >
-                      {events.length} shown - load more
+                      {events.length} shown of {data.count} - load more
                     </Button>
                   )}
                 </Table.Td>
