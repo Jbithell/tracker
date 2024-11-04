@@ -24,6 +24,7 @@ import {
   AttributionControl,
   MapContainer,
   Marker,
+  Polyline,
   Popup,
   TileLayer,
   useMap,
@@ -143,7 +144,12 @@ export const Map = (props: MapProps) => {
               </ThemeIcon>
             )}
           />
-          {uniquePins.map((pin, index) => (
+          <Polyline
+            positions={uniquePins.map((pin) => [pin.latitude, pin.longitude])}
+            color={"red"}
+            smoothFactor={10}
+          />
+          {/*uniquePins.map((pin, index) => (
             <Marker
               key={index}
               position={[pin.latitude, pin.longitude]}
@@ -161,7 +167,7 @@ export const Map = (props: MapProps) => {
                 </Text>
               </Popup>
             </Marker>
-          ))}
+          ))*/}
           <Marker
             position={[
               highestTimestampPin.latitude,

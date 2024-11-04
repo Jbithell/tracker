@@ -5,17 +5,19 @@ import {
 } from "@remix-run/cloudflare";
 import { db } from "../d1client.server";
 import { useLoaderData } from "@remix-run/react";
-import { and, gte, desc } from "drizzle-orm";
+import { and, gte, desc, lte, param } from "drizzle-orm";
 import { Events } from "~/db/schema/Events";
 import { LiveMap } from "~/components/LiveMap/LiveMap";
+import { DateTime } from "luxon";
 export const meta: MetaFunction = () => {
   return [{ title: "Tracking" }];
 };
 
-export const loader = async ({ context }: LoaderFunctionArgs) => {
+export const loader = async ({ context, params }: LoaderFunctionArgs) => {
   const { env } = context.cloudflare;
-  const date = new Date();
-  date.setDate(date.getDate() - 90);
+  const refDate = params.date
+    ? DateTime.fromISO(params.date).toUTC()
+    : DateTime.now().toUTC();
 
   const events = await db(env.DB)
     .select({
@@ -24,8 +26,12 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
     })
     .from(Events)
     .orderBy(desc(Events.timestamp))
-    .where(and(gte(Events.timestamp, date.getUTCMilliseconds())))
-    .limit(50);
+    .where(
+      and(
+        gte(Events.timestamp, refDate.toMillis()),
+        lte(Events.timestamp, refDate.toMillis() + 86400000)
+      )
+    );
 
   return json({
     events,
