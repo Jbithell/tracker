@@ -6,7 +6,7 @@ A tracking system for events, using either an Expo app, or devices compatible wi
 
 The Expo app is a simple app in the app/ folder.
 
-## Website
+## Website
 
 The website is a simple React Router 7 App in the website/ folder.
 
@@ -23,8 +23,8 @@ To set a new address send a message saying `IP,10.10.10.10,5013` (replacing 10.1
 
 Default address is `IP,27.aika168.com,8185`
 
-![Device Commands](./github/device-commands-screenshot-1.png)
-![Device Commands](./github/device-commands-screenshot-2.png)
+![Device Commands](/.github/device-commands-screenshot-1.png)
+![Device Commands](/.github/device-commands-screenshot-2.png)
 
 ### Setup Traccar forwarding
 
