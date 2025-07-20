@@ -23,6 +23,12 @@ To set a new address send a message saying `IP,10.10.10.10,5013` (replacing 10.1
 
 Default address is `IP,27.aika168.com,8185`
 
+![Device manual](/.github/manual-page1.jpg)
+![Device manual](/.github/manual-page2.jpg)
+![Device manual](/.github/manual-page3.jpg)
+
+From a similar device online:
+
 ![Device Commands](/.github/device-commands-screenshot-1.png)
 ![Device Commands](/.github/device-commands-screenshot-2.png)
 
