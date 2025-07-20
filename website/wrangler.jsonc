@@ -11,6 +11,12 @@
       "experimental_remote": false
     }
   ],
+  "routes": [
+    {
+      "pattern": "traccar-forward-event-tracker.jbithell.com",
+      "custom_domain": true
+    }
+  ],
   "vars": {},
   "main": "./workers/app.ts",
   "compatibility_date": "2025-04-05",

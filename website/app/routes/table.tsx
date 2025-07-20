@@ -3,6 +3,7 @@ import {
   IconBrandApple,
   IconBrandGoogleMaps,
   IconChevronLeft,
+  IconDownload,
 } from "@tabler/icons-react";
 import { and, desc, gte, lt, lte, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
@@ -76,9 +77,20 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   return (
     <Container fluid p={"md"}>
       <Group>
-        <Link to={`/${loaderData.date}`}>
-          <Button leftSection={<IconChevronLeft />}>Back to Map</Button>
-        </Link>
+        <Button
+          leftSection={<IconChevronLeft />}
+          component={Link}
+          to={`/${loaderData.date}`}
+        >
+          Back to Map
+        </Button>
+        <Button
+          leftSection={<IconDownload />}
+          href={`/${loaderData.date}/export.gpx`}
+          component="a"
+        >
+          Download GPX
+        </Button>
         <Title order={1}>Position History</Title>
       </Group>
       {events.length === 0 ? (

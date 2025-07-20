@@ -5,5 +5,6 @@ export default [
   route("upload-traccar.json", "./routes/api/traccarUpload.ts"),
   route("upload.json", "./routes/api/appUpload.ts"),
   route(":date/table/:cursor?", "./routes/table.tsx"),
+  route(":date/export.gpx", "./routes/downloadGPX.ts"),
   route(":date?", "./routes/map.tsx"),
 ] satisfies RouteConfig;
