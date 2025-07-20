@@ -11,7 +11,7 @@ export const loader = async ({ context, request }: Route.LoaderArgs) => {
     protocol: zod.string().optional(),
     deviceTime: zod.string().optional(),
     fixTime: zod.string().optional(),
-    valid: zod.boolean().optional(),
+    valid: zod.string().optional(),
     latitude: zod.coerce.number().optional(),
     longitude: zod.coerce.number().optional(),
     altitude: zod.coerce.number().optional(),
@@ -69,7 +69,7 @@ export const action = async ({ context, request }: Route.ActionArgs) => {
         model: zod.string().optional(),
         contact: zod.string().optional(),
         category: zod.string().optional(),
-        disabled: zod.boolean(),
+        disabled: zod.string(),
         expirationTime: zod.string().optional(),
       }),
     });
