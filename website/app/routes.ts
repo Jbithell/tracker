@@ -1,8 +1,9 @@
-import {
-  type RouteConfig,
-  index,
-  layout,
-  route,
-} from "@react-router/dev/routes";
+import { type RouteConfig, route } from "@react-router/dev/routes";
 
-export default [route("($date)/", "./routes/index.tsx")] satisfies RouteConfig;
+export default [
+  route("generateDummyDataLocally", "./routes/generateDummy.tsx"),
+  route("upload-traccar.json", "./routes/api/traccarUpload.ts"),
+  route("upload.json", "./routes/api/appUpload.ts"),
+  route(":date/table/:cursor?", "./routes/table.tsx"),
+  route(":date?", "./routes/map.tsx"),
+] satisfies RouteConfig;

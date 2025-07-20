@@ -1,11 +1,12 @@
 import { useState } from "react";
+import type { Route } from "./+types/generateDummy";
 const GENERATE = false;
 const getRandomTimestamp = () => {
   const now = Date.now();
   const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
   return Math.floor(Math.random() * (now - oneYearAgo) + oneYearAgo);
 };
-export default function Index() {
+export default function Page({ actionData, loaderData }: Route.ComponentProps) {
   const [sending, setSending] = useState(true);
   if (GENERATE)
     fetch("http://127.0.0.1:5173/upload.json", {

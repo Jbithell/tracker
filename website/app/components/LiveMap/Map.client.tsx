@@ -30,7 +30,7 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import { MapProps } from "./LiveMap";
+import type { MapProps } from "./LiveMap";
 import { useViewportSize } from "@mantine/hooks";
 import { theme } from "~/root";
 import { Link, useFetcher, useRevalidator } from "react-router";

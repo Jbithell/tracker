@@ -14,3 +14,13 @@ app/web-build/
 .DS_Store
 
 app/expo-env.d.ts
+
+node_modules
+
+/.cache
+/build
+.env
+
+.wrangler
+
+website/.react-router

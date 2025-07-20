@@ -1,2 +1,1 @@
-export * from "./schema/DisregardedObservations";
-export * from "./schema/Observations";
+export * from "./schema/Events";

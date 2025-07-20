@@ -1,49 +1,28 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import { db } from "../d1client.server";
-import { Link, useFetcher, useLoaderData, useParams } from "react-router";
-import {
-  and,
-  eq,
-  gte,
-  isNotNull,
-  lt,
-  max,
-  asc,
-  desc,
-  gt,
-  sql,
-} from "drizzle-orm";
-import {
-  Button,
-  Card,
-  Container,
-  Group,
-  Image,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { Events } from "~/database/schema/Events";
-import { LiveMap } from "~/components/LiveMap/LiveMap";
-import { DateTime } from "luxon";
+import { Button, Container, Group, Table, Text, Title } from "@mantine/core";
 import {
   IconBrandApple,
   IconBrandGoogleMaps,
   IconChevronLeft,
 } from "@tabler/icons-react";
+import { and, desc, gte, lt, lte, sql } from "drizzle-orm";
+import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
+import { Link, useFetcher, type MetaFunction } from "react-router";
 import { ClientOnly } from "remix-utils/client-only";
-import type { Route } from "./+types/index";
+import { Events } from "~/database/schema/Events";
+import type { Route } from "./+types/table";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Position History" }];
 };
 
 const pageLength = 50;
-export async function loader({ context, request }: Route.LoaderArgs) {
-  const { env } = context.cloudflare;
-  const url = new URL(request.url);
-  const cursor = url.searchParams.get("cursor");
+export async function loader({ context, request, params }: Route.LoaderArgs) {
+  const cursor = params.cursor;
+  let refDate = params.date
+    ? DateTime.fromFormat(params.date, "yyyy-MM-dd", { zone: "utc" })
+    : DateTime.now().toUTC();
+  refDate = refDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
   const events = await context.db
     .select({
@@ -53,23 +32,29 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     })
     .from(Events)
     .orderBy(desc(Events.id))
-    .where(cursor ? lt(Events.id, parseInt(cursor)) : undefined)
+    .where(
+      and(
+        gte(Events.timestamp, refDate.toMillis()),
+        lte(Events.timestamp, refDate.toMillis() + 86400000), // 24 hours
+        cursor ? lt(Events.id, parseInt(cursor)) : undefined
+      )
+    )
     .limit(pageLength);
 
   const count = await context.db
     .select({ count: sql<number>`count(*)` })
     .from(Events);
 
-  return json({
+  return {
     events,
     count: count[0].count,
-  });
+    date: params.date,
+  };
 }
 
-export default function Page({ actionData, loaderData }: Route.ComponentProps) {
-  const data = useLoaderData<typeof loader>();
+export default function Page({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<typeof loader>();
-  const [events, setEvents] = useState(data.events);
+  const [events, setEvents] = useState(loaderData.events);
   /**
    * Resources in the worker are limited, so we need to use infinite scroll
    **/
@@ -86,7 +71,7 @@ export default function Page({ actionData, loaderData }: Route.ComponentProps) {
   const loadNext = () => {
     if (fetcher.state === "loading") return;
     const cursor = events[events.length - 1].id;
-    fetcher.load(`?cursor=${cursor}`);
+    fetcher.load(`/${loaderData.date}/table/${cursor}`);
   };
   return (
     <Container fluid p={"md"}>
@@ -161,7 +146,7 @@ export default function Page({ actionData, loaderData }: Route.ComponentProps) {
             <Table.Tfoot>
               <Table.Tr>
                 <Table.Td colSpan={9}>
-                  {data.count === events.length ? (
+                  {loaderData.count === events.length ? (
                     <Text>
                       All {events.length} record{events.length !== 0 ? "s" : ""}{" "}
                       shown
@@ -171,7 +156,7 @@ export default function Page({ actionData, loaderData }: Route.ComponentProps) {
                       onClick={() => loadNext()}
                       loading={fetcher.state === "loading"}
                     >
-                      {events.length} shown of {data.count} - load more
+                      {events.length} shown of {loaderData.count} - load more
                     </Button>
                   )}
                 </Table.Td>

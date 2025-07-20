@@ -1,11 +1,11 @@
 {
-  "version": "6",
+  "version": "5",
   "dialect": "sqlite",
-  "id": "21633b08-db34-4783-a27d-661355ebccc7",
+  "id": "8b4f9908-41af-43d6-a11f-fa2bdbc0e714",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "DisregardedObservations": {
-      "name": "DisregardedObservations",
+    "events": {
+      "name": "events",
       "columns": {
         "id": {
           "name": "id",
@@ -19,31 +19,11 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         },
         "data": {
           "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "disregardReasonFriendly": {
-          "name": "disregardReasonFriendly",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "disregardReasonDetailed": {
-          "name": "disregardReasonDetailed",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -53,56 +33,13 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "observations": {
-      "name": "observations",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "data": {
-          "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
+      "uniqueConstraints": {}
     }
   },
-  "views": {},
   "enums": {},
   "_meta": {
     "schemas": {},
     "tables": {},
     "columns": {}
-  },
-  "internal": {
-    "indexes": {}
   }
 }

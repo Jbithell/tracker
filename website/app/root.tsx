@@ -1,11 +1,16 @@
 import "@mantine/charts/styles.css";
 import {
+  AppShell,
   Button,
   ColorSchemeScript,
   Container,
+  createTheme,
   Group,
+  LoadingOverlay,
+  MantineProvider,
   Text,
   Title,
+  type MantineColorsTuple,
 } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
@@ -17,12 +22,33 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "react-router";
 import type { Route } from "./+types/root";
 
 import type React from "react";
-import classes from "./utils/ErrorBoundary.module.css";
-import { MantineProviderWrapper } from "./utils/theme";
+import classes from "./components/ErrorBoundary.module.css";
+
+const myColor: MantineColorsTuple = [
+  "#ffe9f0",
+  "#ffd0dd",
+  "#faa0b8",
+  "#f66d90",
+  "#f2426f",
+  "#f1275a",
+  "#f1184f",
+  "#d70841",
+  "#c00038",
+  "#a9002f",
+];
+
+export const theme = createTheme({
+  primaryColor: "pink",
+  colors: {
+    pink: myColor,
+  },
+  primaryShade: 3,
+});
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,7 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProviderWrapper>{children}</MantineProviderWrapper>
+        <MantineProvider theme={theme}>{children}</MantineProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -44,7 +70,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const navigating = useNavigation();
+  return (
+    <AppShell header={{ height: 0 }} padding={0}>
+      <AppShell.Main>
+        <LoadingOverlay
+          visible={navigating.state === "loading"}
+          loaderProps={{ type: "oval", size: "xl" }}
+        />
+        <Outlet />
+      </AppShell.Main>
+    </AppShell>
+  );
 }
 
 export const links: Route.LinksFunction = () => [];
