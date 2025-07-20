@@ -76,7 +76,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   return (
     <Container fluid p={"md"}>
       <Group>
-        <Link to="/">
+        <Link to={`/${loaderData.date}`}>
           <Button leftSection={<IconChevronLeft />}>Back to Map</Button>
         </Link>
         <Title order={1}>Position History</Title>
