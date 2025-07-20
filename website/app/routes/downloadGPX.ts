@@ -67,7 +67,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
                       ).toISO()}</time>
                     </trkpt>`;
           });
-
+          controller.enqueue(encoder.encode(thisRow.join("\n")));
           cursor += databaseResult.length;
 
           // Optional: Yield for other tasks if running in a tight loop in some environments
