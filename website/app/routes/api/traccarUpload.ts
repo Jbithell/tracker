@@ -35,7 +35,8 @@ export const loader = async ({ context, request }: Route.LoaderArgs) => {
   );
   if (!parsedRequestParameters.success)
     console.log(parsedRequestParameters.error);
-  console.log(parsedRequestParameters.data);
+  else console.log("Passed validation successfully");
+  console.log(JSON.stringify(parsedRequestParameters.data));
   return data({ message: "Not yet developed" }, 200);
 };
 
@@ -78,6 +79,7 @@ export const action = async ({ context, request }: Route.ActionArgs) => {
     }
     const parsedPayload = await postPayloadSchema.safeParseAsync(payload);
     if (!parsedPayload.success) console.log(parsedPayload.error);
+    else console.log("Passed validation successfully");
     console.log(`Payload is ${JSON.stringify(payload)}`);
     return data({ message: "Not yet developed" }, 200);
   } else return data({ message: "Method not allowed" }, 405);
