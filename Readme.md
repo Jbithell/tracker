@@ -32,12 +32,10 @@ Stored in `/opt/traccar/conf/traccar.xml` on the traccar server.
 
 <entry key='forward.enable'>true</entry>
 <entry key='forward.type'>url</entry>
-<entry key='forward.url'>https://traccar-forward-event-tracker.jbithell.com/upload-traccar.json</entry>
-<entry key='forward.json'>true</entry>
-
-<entry key='event.forward.url'>https://traccar-forward-event-tracker.jbithell.com/upload-traccar.json</entry>
+<entry key='forward.url'>https://traccar-forward-event-tracker.jbithell.com/upload-traccar.json?name={name}&amp;status={status}&amp;deviceId={deviceId}&amp;protocol={protocol}&amp;deviceTime={deviceTime}&amp;fixTime={fixTime}&amp;valid={valid}&amp;latitude={latitude}&amp;longitude={longitude}&amp;altitude={altitude}&amp;speed={speed}&amp;course={course}&amp;accuracy={accuracy}&amp;statusCode={statusCode}</entry>
 <entry key='forward.retry.enable'>true</entry>
 <entry key='forward.retry.delay'>10000</entry>
 <entry key='forward.retry.count'>1000</entry>
 <entry key='forward.retry.limit'>1000</entry>
+<entry key='event.forward.url'>https://traccar-forward-event-tracker.jbithell.com/upload-traccar.json</entry>
 <entry key='event.forward.type'>json</entry>
