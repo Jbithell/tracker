@@ -4,12 +4,11 @@ import type { Route } from "./+types/traccarUpload";
 export const loader = async ({ context, request }: Route.LoaderArgs) => {
   // Get parameters from the request
   const url = new URL(request.url);
-  console.log("Request info", {
-    url,
-    method: request.method,
-    headers: request.headers,
-    body: request.body,
-  });
+  console.log(
+    `Request received, method ${
+      request.method
+    }, parameters ${url.searchParams.toString()}, body ${await request.text()}`
+  );
   url.searchParams.forEach((value, key) => {
     console.log(key, value);
   });
@@ -17,15 +16,25 @@ export const loader = async ({ context, request }: Route.LoaderArgs) => {
 };
 
 export const action = async ({ context, request }: Route.ActionArgs) => {
-  if (request.method !== "PUT") {
-    return data({ message: "Method not allowed" }, 405);
+  if (request.method === "PUT") {
+    let payload: unknown;
+    try {
+      payload = await request.json();
+    } catch (e) {
+      return data({ message: "Invalid JSON" }, 400);
+    }
+    console.log("Payload", payload);
+    return data({ message: "Not yet developed" }, 200);
   }
-  let payload: unknown;
-  try {
-    payload = await request.json();
-  } catch (e) {
-    return data({ message: "Invalid JSON" }, 400);
+  if (request.method === "POST") {
+    let payload: unknown;
+    try {
+      payload = await request.json();
+    } catch (e) {
+      return data({ message: "Invalid JSON" }, 400);
+    }
+    console.log("Payload", payload);
+    console.log(`Payload is ${JSON.stringify(payload)}`);
+    return data({ message: "Not yet developed" }, 200);
   }
-  console.log("Payload", payload);
-  return data({ message: "Not yet developed" }, 200);
 };

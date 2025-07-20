@@ -12,7 +12,7 @@ The website is a simple React Router 7 App in the website/ folder.
 
 ## Traccar
 
-You can use traccar as the intermediary for tracking devices with different protocols.
+You can use [traccar](https://github.com/traccar/traccar) as the intermediary for tracking devices with different protocols.
 
 ### Device
 
@@ -30,8 +30,11 @@ Default address is `IP,27.aika168.com,8185`
 
 Stored in `/opt/traccar/conf/traccar.xml` on the traccar server.
 
+<entry key='forward.enable'>true</entry>
 <entry key='forward.type'>url</entry>
 <entry key='forward.url'>https://traccar-forward-event-tracker.jbithell.com/upload-traccar.json</entry>
+<entry key='forward.json'>true</entry>
+
 <entry key='event.forward.url'>https://traccar-forward-event-tracker.jbithell.com/upload-traccar.json</entry>
 <entry key='forward.retry.enable'>true</entry>
 <entry key='forward.retry.delay'>10000</entry>
