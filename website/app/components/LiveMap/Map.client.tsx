@@ -1,24 +1,17 @@
-import {
-  Button,
-  Group,
-  MantineProvider,
-  Text,
-  ThemeIcon,
-  Title,
-} from "@mantine/core";
+import { Button, Group, MantineProvider, Text, ThemeIcon } from "@mantine/core";
+import { useViewportSize } from "@mantine/hooks";
 import {
   IconBrandApple,
   IconBrandGoogleMaps,
   IconCar,
   IconCompass,
   IconCurrentLocation,
-  IconFlagBolt,
-  IconPinned,
   IconRefresh,
-  IconSailboat,
 } from "@tabler/icons-react";
 import { DivIcon, divIcon, LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { DateTime } from "luxon";
+import { useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   AttributionControl,
@@ -30,12 +23,9 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import type { MapProps } from "./LiveMap";
-import { useViewportSize } from "@mantine/hooks";
+import { Link, useRevalidator } from "react-router";
 import { theme } from "~/root";
-import { Link, useFetcher, useRevalidator } from "react-router";
-import { DateTime } from "luxon";
-import { useState } from "react";
+import type { MapProps } from "./LiveMap";
 
 export const MantineProviderWrapper = (props: {
   children: React.ReactNode;
