@@ -1,4 +1,4 @@
-import { and, desc, gte, lte } from "drizzle-orm";
+import { and, asc, gte, lte } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { Events } from "~/database/schema/Events";
 import type { Route } from "./+types/downloadGPX";
@@ -36,7 +36,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
               data: Events.data,
             })
             .from(Events)
-            .orderBy(desc(Events.timestamp))
+            .orderBy(asc(Events.timestamp))
             .limit(batchSize)
             .offset(cursor)
             .where(
