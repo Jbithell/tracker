@@ -31,7 +31,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: "website"
-          wranglerVersion: "4.9.0"
           packageManager: npm
           command: deploy
           postCommands: |
