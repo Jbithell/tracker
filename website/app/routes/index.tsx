@@ -1,25 +1,21 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/cloudflare";
-import { db } from "../d1client.server";
-import { useLoaderData } from "@remix-run/react";
+import { data, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { useLoaderData } from "react-router";
 import { and, gte, desc, lte, param } from "drizzle-orm";
-import { Events } from "~/db/schema/Events";
+import { Events } from "~/database/schema/Events";
 import { LiveMap } from "~/components/LiveMap/LiveMap";
 import { DateTime } from "luxon";
+import type { Route } from "./+types/index";
+
 export const meta: MetaFunction = () => {
   return [{ title: "Tracking" }];
 };
 
-export const loader = async ({ context, params }: LoaderFunctionArgs) => {
-  const { env } = context.cloudflare;
+export async function loader({ context, params }: Route.LoaderArgs) {
   const refDate = params.date
     ? DateTime.fromISO(params.date).toUTC()
     : DateTime.now().toUTC();
 
-  const events = await db(env.DB)
+  const events = await context.db
     .select({
       timestamp: Events.timestamp,
       data: Events.data,
@@ -33,16 +29,16 @@ export const loader = async ({ context, params }: LoaderFunctionArgs) => {
       )
     );
 
-  return json({
+  return data({
     events,
   });
-};
-export default function Index() {
-  const data = useLoaderData<typeof loader>();
+}
+
+export default function Page({ actionData, loaderData }: Route.ComponentProps) {
   return (
     <LiveMap
       zoom={13}
-      pins={data.events
+      pins={actionData.events
         .filter(
           (event) =>
             "latitude" in event.data.location &&

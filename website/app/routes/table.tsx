@@ -1,10 +1,6 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/cloudflare";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { db } from "../d1client.server";
-import { Link, useFetcher, useLoaderData, useParams } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData, useParams } from "react-router";
 import {
   and,
   eq,
@@ -27,7 +23,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { Events } from "~/db/schema/Events";
+import { Events } from "~/database/schema/Events";
 import { LiveMap } from "~/components/LiveMap/LiveMap";
 import { DateTime } from "luxon";
 import {
@@ -37,17 +33,19 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils/client-only";
+import type { Route } from "./+types/index";
+
 export const meta: MetaFunction = () => {
   return [{ title: "Position History" }];
 };
 
 const pageLength = 50;
-export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const { env } = context.cloudflare;
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
 
-  const events = await db(env.DB)
+  const events = await context.db
     .select({
       timestamp: Events.timestamp,
       data: Events.data,
@@ -58,7 +56,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     .where(cursor ? lt(Events.id, parseInt(cursor)) : undefined)
     .limit(pageLength);
 
-  const count = await db(env.DB)
+  const count = await context.db
     .select({ count: sql<number>`count(*)` })
     .from(Events);
 
@@ -66,9 +64,9 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     events,
     count: count[0].count,
   });
-};
+}
 
-export default function Page() {
+export default function Page({ actionData, loaderData }: Route.ComponentProps) {
   const data = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof loader>();
   const [events, setEvents] = useState(data.events);

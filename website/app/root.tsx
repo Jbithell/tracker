@@ -1,55 +1,28 @@
+import "@mantine/charts/styles.css";
+import {
+  Button,
+  ColorSchemeScript,
+  Container,
+  Group,
+  Text,
+  Title,
+} from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
-import "@mantine/charts/styles.css";
-import "@mantine/notifications/styles.css";
-import "@mantine/nprogress/styles.css";
-import "@mantine/code-highlight/styles.css";
 import {
+  isRouteErrorResponse,
   Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  isRouteErrorResponse,
-  useNavigation,
-  useRouteError,
-} from "@remix-run/react";
-import {
-  ColorSchemeScript,
-  Title,
-  Text,
-  Button,
-  Container,
-  Group,
-  AppShell,
-  LoadingOverlay,
-  MantineProvider,
-  createTheme,
-  MantineColorsTuple,
-} from "@mantine/core";
-import classes from "./components/ErrorBoundary.module.css";
+} from "react-router";
+import type { Route } from "./+types/root";
 
-const myColor: MantineColorsTuple = [
-  "#ffe9f0",
-  "#ffd0dd",
-  "#faa0b8",
-  "#f66d90",
-  "#f2426f",
-  "#f1275a",
-  "#f1184f",
-  "#d70841",
-  "#c00038",
-  "#a9002f",
-];
-
-export const theme = createTheme({
-  primaryColor: "pink",
-  colors: {
-    pink: myColor,
-  },
-  primaryShade: 3,
-});
+import type React from "react";
+import classes from "./utils/ErrorBoundary.module.css";
+import { MantineProviderWrapper } from "./utils/theme";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -59,10 +32,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProviderWrapper>{children}</MantineProviderWrapper>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -71,59 +44,41 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const navigating = useNavigation();
-  return (
-    <AppShell header={{ height: 0 }} padding={0}>
-      <AppShell.Main>
-        <LoadingOverlay
-          visible={navigating.state === "loading"}
-          loaderProps={{ type: "oval", size: "xl" }}
-        />
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
-  );
+  return <Outlet />;
 }
 
-export function ErrorBoundary() {
-  const error = useRouteError();
-  console.log(error); // Send error to CF workers dashboard
+export const links: Route.LinksFunction = () => [];
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let message = "Error";
+  let details = "An unexpected error occurred.";
+  let stack: string | undefined;
+
   if (isRouteErrorResponse(error)) {
-    return (
-      <Container className={classes.root}>
-        <div className={classes.label}>{error.status}</div>
-        <Title className={classes.title}>{error.statusText}</Title>
-        <Text c="dimmed" size="lg" ta="center" className={classes.description}>
-          {error.data}
-        </Text>
-        <Group justify="center">
-          <Link to="/">
-            <Button variant="subtle" size="md">
-              Take me back to home page
-            </Button>
-          </Link>
-        </Group>
-      </Container>
-    );
-  } else if (error instanceof Error) {
-    return (
-      <Container className={classes.root}>
-        <Title className={classes.title}>{error.name}</Title>
-        <Text c="dimmed" size="lg" ta="center" className={classes.description}>
-          {process.env.NODE_ENV !== "production"
-            ? error.message
-            : "An error occurred trying to load this page, please try again later."}
-        </Text>
-        <Group justify="center">
-          <Link to="/">
-            <Button variant="subtle" size="md">
-              Take me back to home page
-            </Button>
-          </Link>
-        </Group>
-      </Container>
-    );
-  } else {
-    return <h1>Unknown Error</h1>;
+    message = error.status === 404 ? "404" : "Error";
+    details =
+      error.status === 404
+        ? "The requested page could not be found."
+        : error.statusText || details;
+  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    details = error.message;
+    stack = error.stack;
   }
+  console.log(error); // Send error to CF workers dashboard
+
+  return (
+    <Container className={classes.root}>
+      <Title className={classes.title}>{message}</Title>
+      <Text c="dimmed" size="lg" ta="center" className={classes.details}>
+        {process.env.NODE_ENV !== "production" ? stack : details}
+      </Text>
+      <Group justify="center">
+        <Link reloadDocument to="/">
+          <Button variant="subtle" size="md">
+            Take me back to home page
+          </Button>
+        </Link>
+      </Group>
+    </Container>
+  );
 }

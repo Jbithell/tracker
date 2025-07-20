@@ -3,13 +3,13 @@ import {
   json,
   redirect,
   type LoaderFunctionArgs,
-} from "@remix-run/cloudflare";
+} from "react-router";
 import { db } from "../d1client.server";
 import { withZod } from "@remix-validated-form/with-zod";
 import { number, z as zod } from "zod";
 import { GenericObject, validationError } from "remix-validated-form";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
-import { Events } from "~/db/schema/Events";
+import { Events } from "~/database/schema/Events";
 
 export const loader = async ({ context, request }: ActionFunctionArgs) => {
   const { env, cf } = context.cloudflare;

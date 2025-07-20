@@ -1,0 +1,37 @@
+{
+  "name": "tracker",
+  "workers_dev": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "event-tracker-prod",
+      "database_id": "36028421-7297-4ee3-a6e2-39fe38bb2170",
+      "migrations_table": "migrations",
+      "migrations_dir": "database/migrations",
+      "experimental_remote": false
+    }
+  ],
+  "vars": {},
+  "main": "./workers/app.ts",
+  "compatibility_date": "2025-04-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./build/client/",
+    "run_worker_first": false
+  },
+  "upload_source_maps": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "invocation_logs": true
+    }
+  },
+  "preview_urls": false,
+  "triggers": {
+    "crons": ["30 2 * * *"] // every day at 2:30 AM UTC
+  },
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  }
+}

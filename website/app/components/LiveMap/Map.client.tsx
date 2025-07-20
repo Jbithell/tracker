@@ -33,7 +33,7 @@ import {
 import { MapProps } from "./LiveMap";
 import { useViewportSize } from "@mantine/hooks";
 import { theme } from "~/root";
-import { Link, useRevalidator } from "@remix-run/react";
+import { Link, useFetcher, useRevalidator } from "react-router";
 import { DateTime } from "luxon";
 import { useState } from "react";
 
@@ -90,8 +90,9 @@ const ThisUserCurrentLocation = (props: { icon: DivIcon }) => {
 
 export const Map = (props: MapProps) => {
   const { width, height } = useViewportSize();
-
-  if (!props.pins || props.pins.length === 0) return <Text>No data</Text>;
+  if (!props.pins || props.pins.length === 0) {
+    return <Text>No data</Text>;
+  }
 
   const uniquePins = Object.values(
     props.pins.reduce((acc, pin) => {

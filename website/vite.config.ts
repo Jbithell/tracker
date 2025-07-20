@@ -1,10 +1,15 @@
-import {
-  vitePlugin as remix,
-  cloudflareDevProxyVitePlugin as remixCloudflareDevProxy,
-} from "@remix-run/dev";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [remixCloudflareDevProxy(), remix(), tsconfigPaths()],
+  plugins: [
+    cloudflare({
+      viteEnvironment: { name: "ssr" },
+      experimental: { remoteBindings: true },
+    }),
+    reactRouter(),
+    tsconfigPaths(),
+  ],
 });
