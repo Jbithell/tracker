@@ -34,9 +34,11 @@ export const loader = async ({ context, request }: Route.LoaderArgs) => {
     Object.fromEntries(url.searchParams)
   );
   if (!parsedRequestParameters.success)
-    console.log(parsedRequestParameters.error);
+    console.log(
+      `Errors from zod: ${JSON.stringify(parsedRequestParameters.error)}`
+    );
   else console.log("Passed validation successfully");
-  console.log(JSON.stringify(parsedRequestParameters.data));
+  console.log(`Data: ${JSON.stringify(parsedRequestParameters.data)}`);
   return data({ message: "Not yet developed" }, 200);
 };
 
@@ -78,7 +80,8 @@ export const action = async ({ context, request }: Route.ActionArgs) => {
       return data({ message: "Invalid JSON" }, 400);
     }
     const parsedPayload = await postPayloadSchema.safeParseAsync(payload);
-    if (!parsedPayload.success) console.log(parsedPayload.error);
+    if (!parsedPayload.success)
+      console.log(`Errors from zod: ${JSON.stringify(parsedPayload.error)}`);
     else console.log("Passed validation successfully");
     console.log(`Payload is ${JSON.stringify(payload)}`);
     return data({ message: "Not yet developed" }, 200);
