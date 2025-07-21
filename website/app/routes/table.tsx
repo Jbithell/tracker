@@ -149,8 +149,14 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                     {Math.round(event.data.location.altitude)} m
                   </Table.Td>
                   <Table.Td>
-                    {event.data.battery.percentage}%
-                    {event.data.battery.charging ? " (charging)" : ""}
+                    {event.data.battery ? (
+                      <>
+                        {event.data.battery.percentage}%
+                        {event.data.battery.charging ? " (charging)" : ""}
+                      </>
+                    ) : (
+                      "No battery data"
+                    )}
                   </Table.Td>
                 </Table.Tr>
               ))}

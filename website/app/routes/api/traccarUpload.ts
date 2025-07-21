@@ -1,5 +1,6 @@
 import { data } from "react-router";
 import { z as zod } from "zod";
+import { Events } from "~/database/schema/Events";
 import type { Route } from "./+types/traccarUpload";
 
 export const loader = async ({ context, request }: Route.LoaderArgs) => {
@@ -9,14 +10,14 @@ export const loader = async ({ context, request }: Route.LoaderArgs) => {
     status: zod.string().optional(),
     deviceId: zod.coerce.number().optional(),
     protocol: zod.string().optional(),
-    deviceTime: zod.string().optional(),
-    fixTime: zod.string().optional(),
-    valid: zod.string().optional(),
-    latitude: zod.coerce.number().optional(),
-    longitude: zod.coerce.number().optional(),
+    deviceTime: zod.coerce.number(), // milliseconds since epoch
+    fixTime: zod.coerce.number(), // milliseconds since epoch
+    valid: zod.coerce.boolean().optional(),
+    latitude: zod.coerce.number().max(90).min(-90),
+    longitude: zod.coerce.number().max(180).min(-180),
     altitude: zod.coerce.number().optional(),
-    speed: zod.coerce.number().optional(),
-    course: zod.coerce.number().optional(),
+    speed: zod.coerce.number().min(0).optional(),
+    course: zod.coerce.number().min(0).max(360).optional(),
     accuracy: zod.coerce.number().optional(),
     statusCode: zod.string().optional(),
     address: zod.string().optional(),
@@ -33,13 +34,32 @@ export const loader = async ({ context, request }: Route.LoaderArgs) => {
   const parsedRequestParameters = await getRequestParameters.safeParseAsync(
     Object.fromEntries(url.searchParams)
   );
-  if (!parsedRequestParameters.success)
+  if (parsedRequestParameters.success) {
+    const insertTimeSeries = await context.db.insert(Events).values({
+      timestamp: parsedRequestParameters.data.fixTime,
+      data: {
+        location: {
+          accuracy: parsedRequestParameters.data.accuracy ?? 0,
+          longitude: parsedRequestParameters.data.longitude,
+          altitude: parsedRequestParameters.data.altitude ?? 0,
+          heading: parsedRequestParameters.data.course ?? 0,
+          latitude: parsedRequestParameters.data.latitude,
+          speed: parsedRequestParameters.data.speed ?? 0,
+          altitudeAccuracy: null,
+        },
+        battery: null,
+      },
+    });
+    if (insertTimeSeries.error)
+      return data({ message: insertTimeSeries.error }, 500);
+    return data({}, 200);
+  } else {
     console.log(
       `Errors from zod: ${JSON.stringify(parsedRequestParameters.error)}`
     );
-  else console.log("Passed validation successfully");
-  console.log(`Data: ${JSON.stringify(parsedRequestParameters.data)}`);
-  return data({ message: "Not yet developed" }, 200);
+    console.log(`Data: ${JSON.stringify(parsedRequestParameters.data)}`);
+    return data({ message: "Invalid request" }, 400);
+  }
 };
 
 export const action = async ({ context, request }: Route.ActionArgs) => {

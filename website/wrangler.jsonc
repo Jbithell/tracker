@@ -15,6 +15,14 @@
     {
       "pattern": "traccar-forward-event-tracker.jbithell.com",
       "custom_domain": true
+    },
+    {
+      "pattern": "lbvcr24.bithell.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "lbvcr25.bithell.com",
+      "custom_domain": true
     }
   ],
   "vars": {},
