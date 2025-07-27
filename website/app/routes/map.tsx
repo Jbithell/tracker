@@ -16,6 +16,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
     ? DateTime.fromFormat(params.date, "yyyy-MM-dd", { zone: "utc" })
     : DateTime.now().toUTC();
   refDate = refDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+  const urlDate = refDate.toFormat("yyyy-MM-dd");
 
   const events = await context.db
     .select({
@@ -34,6 +35,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
   return {
     date: refDate.toISO(),
     events,
+    urlDate,
   };
 }
 
@@ -84,6 +86,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           longitude: event.data.location.longitude,
           timestamp: event.timestamp,
         }))}
+      urlDate={loaderData.urlDate}
     />
   );
 }

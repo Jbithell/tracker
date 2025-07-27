@@ -11,7 +11,7 @@ import {
 import { DivIcon, divIcon, LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { DateTime } from "luxon";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   AttributionControl,
@@ -79,6 +79,13 @@ const ThisUserCurrentLocation = (props: { icon: DivIcon }) => {
 };
 
 export const Map = (props: MapProps) => {
+  const revalidator = useRevalidator();
+
+  useEffect(() => {
+    const intervalId = setInterval(() => revalidator.revalidate(), 60 * 1000); // Refresh the page for new data every minute
+    return () => clearInterval(intervalId);
+  }, [revalidator]);
+
   const { width, height } = useViewportSize();
   if (!props.pins || props.pins.length === 0) {
     return <Text>No data</Text>;
@@ -120,13 +127,13 @@ export const Map = (props: MapProps) => {
           />
           <AttributionControl
             position="bottomright"
-            prefix='
-              <a href="table">
+            prefix={`
+              <a href="/${props.urlDate}/table">
                 Position History
               </a>&nbsp;|&nbsp;
               <a href="https://leafletjs.com" title="A JavaScript library for interactive maps" target="_blank" rel="noopener noreferrer">
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet
-              </a>'
+              </a>`}
           />
           <ThisUserCurrentLocation
             icon={tablerMapIcon(
@@ -173,11 +180,28 @@ export const Map = (props: MapProps) => {
           >
             <Popup>
               <Text>
-                Tracker last seen{" "}
-                {DateTime.fromSeconds(highestTimestampPin.timestamp / 1000, {
-                  zone: "local",
-                }).toRelative()}
-                <br />
+                {(() => {
+                  const now = DateTime.now();
+                  const lastSeen = DateTime.fromSeconds(
+                    highestTimestampPin.timestamp / 1000,
+                    {
+                      zone: "local",
+                    }
+                  );
+                  // Only show if last seen is today and less than 12 hours ago
+                  if (
+                    now.hasSame(lastSeen, "day") &&
+                    now.diff(lastSeen, "hours").hours < 12
+                  ) {
+                    return (
+                      <>
+                        Tracker last seen {lastSeen.toRelative()}
+                        <br />
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
                 {DateTime.fromSeconds(highestTimestampPin.timestamp / 1000, {
                   zone: "local",
                 }).toLocaleString(DateTime.DATETIME_MED)}
@@ -195,7 +219,7 @@ export const Map = (props: MapProps) => {
                     />
                   }
                 >
-                  Google Maps
+                  Open location in Google Maps
                 </Button>
               </Link>
               <Link
@@ -209,7 +233,7 @@ export const Map = (props: MapProps) => {
                     <IconBrandApple style={{ width: "70%", height: "70%" }} />
                   }
                 >
-                  Apple Maps
+                  Open location in Apple Maps
                 </Button>
               </Link>
             </Popup>

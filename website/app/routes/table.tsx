@@ -24,7 +24,8 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
     ? DateTime.fromFormat(params.date, "yyyy-MM-dd", { zone: "utc" })
     : DateTime.now().toUTC();
   refDate = refDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-
+  const urlDate = refDate.toFormat("yyyy-MM-dd");
+  
   const events = await context.db
     .select({
       timestamp: Events.timestamp,
@@ -44,12 +45,18 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
 
   const count = await context.db
     .select({ count: sql<number>`count(*)` })
-    .from(Events);
+    .from(Events)
+    .where(
+      and(
+        gte(Events.timestamp, refDate.toMillis()),
+        lte(Events.timestamp, refDate.toMillis() + 86400000) // 24 hours
+      )
+    );
 
   return {
     events,
     count: count[0].count,
-    date: params.date,
+    date: urlDate,
   };
 }
 

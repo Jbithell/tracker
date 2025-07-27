@@ -8,6 +8,7 @@ export interface MapProps {
     longitude: number;
     timestamp: number;
   }[];
+  urlDate: string;
 }
 export const LiveMap = (props: MapProps) => (
   <ClientOnly fallback={<Center></Center>}>
