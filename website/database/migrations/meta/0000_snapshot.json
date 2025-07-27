@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "8b4f9908-41af-43d6-a11f-fa2bdbc0e714",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "events": {
       "name": "events",
@@ -33,13 +31,16 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "8b4f9908-41af-43d6-a11f-fa2bdbc0e714",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "views": {}
 }
