@@ -225,7 +225,19 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                               {DateTime.fromSeconds(
                                 departureEvent.timestamp / 1000,
                                 { zone: "Europe/London" }
-                              ).toLocaleString(DateTime.TIME_24_SIMPLE)}
+                              ).toLocaleString(DateTime.TIME_24_SIMPLE)}{" "}
+                              (
+                              {DateTime.fromSeconds(
+                                departureEvent.timestamp / 1000,
+                                { zone: "Europe/London" }
+                              ).toRelative({
+                                base: DateTime.fromSeconds(
+                                  arrivalEvent.timestamp / 1000,
+                                  { zone: "Europe/London" }
+                                ),
+                                style: "short",
+                              })}
+                              )
                             </Table.Td>
                           </>
                         );
