@@ -181,7 +181,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                   </Table.Thead>
                   <Table.Tbody>
                     {events.map((event) => (
-                      <Table.Tr key={event.id}>
+                      <Table.Tr
+                        key={`${timingPoint.timing_point_id}-${event.timestamp}-${event.type}`}
+                      >
                         <Table.Td>{event.type}</Table.Td>
                         <Table.Td>
                           {DateTime.fromSeconds(event.timestamp / 1000, {

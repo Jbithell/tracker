@@ -1,10 +1,10 @@
 import { Center, Stack, Title } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { and, desc, gte, lte } from "drizzle-orm";
+import { and, asc, desc, gte, lte, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { useNavigate, type MetaFunction } from "react-router";
 import { LiveMap } from "~/components/LiveMap/LiveMap";
-import { Events } from "~/database/schema/Events";
+import * as Schema from "~/database/schema.d";
 import type { Route } from "./+types/map";
 
 export const meta: MetaFunction = () => {
@@ -20,22 +20,36 @@ export async function loader({ context, params }: Route.LoaderArgs) {
 
   const events = await context.db
     .select({
-      timestamp: Events.timestamp,
-      data: Events.data,
+      timestamp: Schema.Events.timestamp,
+      data: Schema.Events.data,
     })
-    .from(Events)
-    .orderBy(desc(Events.timestamp))
+    .from(Schema.Events)
+    .orderBy(desc(Schema.Events.timestamp))
     .where(
       and(
-        gte(Events.timestamp, refDate.toMillis()),
-        lte(Events.timestamp, refDate.toMillis() + 86400000) // 24 hours
+        gte(Schema.Events.timestamp, refDate.toMillis()),
+        lte(Schema.Events.timestamp, refDate.toMillis() + 86400000) // 24 hours
       )
     );
+
+  const timingPoints = await context.db
+    .select({
+      name: Schema.TimingPoints.name,
+      latitude: Schema.TimingPoints.latitude,
+      longitude: Schema.TimingPoints.longitude,
+    })
+    .from(Schema.TimingPoints)
+    .orderBy(asc(Schema.TimingPoints.order)).where(sql`EXISTS (
+      SELECT 1
+      FROM json_each(${Schema.TimingPoints.applicableDates})
+      WHERE value = ${urlDate}
+    )`); // Selects only timing points that are applicable for the current date
 
   return {
     date: refDate.toISO(),
     events,
     urlDate,
+    timingPoints,
   };
 }
 
@@ -86,6 +100,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           longitude: event.data.location.longitude,
           timestamp: event.timestamp,
         }))}
+      timingPoints={loaderData.timingPoints}
       urlDate={loaderData.urlDate}
     />
   );

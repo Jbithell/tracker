@@ -9,6 +9,11 @@ export interface MapProps {
     timestamp: number;
   }[];
   urlDate: string;
+  timingPoints: {
+    name: string;
+    latitude: number;
+    longitude: number;
+  }[];
 }
 export const LiveMap = (props: MapProps) => (
   <ClientOnly fallback={<Center></Center>}>

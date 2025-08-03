@@ -6,6 +6,7 @@ import {
   IconCar,
   IconCompass,
   IconCurrentLocation,
+  IconPinned,
   IconRefresh,
 } from "@tabler/icons-react";
 import { DivIcon, divIcon, LatLng } from "leaflet";
@@ -147,25 +148,6 @@ export const Map = (props: MapProps) => {
             color={"red"}
             smoothFactor={10}
           />
-          {/*uniquePins.map((pin, index) => (
-            <Marker
-              key={index}
-              position={[pin.latitude, pin.longitude]}
-              icon={tablerMapIcon(
-                <ThemeIcon radius="xl" size="sm" color="orange">
-                  <IconPinned style={{ width: "70%", height: "70%" }} />
-                </ThemeIcon>
-              )}
-            >
-              <Popup>
-                <Text>
-                  {DateTime.fromSeconds(pin.timestamp / 1000, {
-                    zone: "local",
-                  }).toLocaleString(DateTime.DATETIME_MED)}
-                </Text>
-              </Popup>
-            </Marker>
-          ))*/}
           <Marker
             position={[
               highestTimestampPin.latitude,
@@ -238,6 +220,21 @@ export const Map = (props: MapProps) => {
               </Link>
             </Popup>
           </Marker>
+          {props.timingPoints.map((pin, index) => (
+            <Marker
+              key={index}
+              position={[pin.latitude, pin.longitude]}
+              icon={tablerMapIcon(
+                <ThemeIcon radius="xl" size="sm" color="orange">
+                  <IconPinned style={{ width: "70%", height: "70%" }} />
+                </ThemeIcon>
+              )}
+            >
+              <Popup>
+                <Text>{pin.name}</Text>
+              </Popup>
+            </Marker>
+          ))}
           <div className="leaflet-top leaflet-right">
             <div className="leaflet-control leaflet-bar">
               <Group>
