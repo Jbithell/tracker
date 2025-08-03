@@ -1,5 +1,7 @@
 import {
   Button,
+  Group,
+  List,
   MantineProvider,
   Modal,
   NumberInput,
@@ -8,7 +10,7 @@ import {
   ThemeIcon,
 } from "@mantine/core";
 import { useViewportSize } from "@mantine/hooks";
-import { IconPinned } from "@tabler/icons-react";
+import { IconPinned, IconTrash } from "@tabler/icons-react";
 import { divIcon, type LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
@@ -97,68 +99,138 @@ function NewPointCreator({
 export const TimingPointEditor = (props: TimingPointEditorProps) => {
   const { width, height } = useViewportSize();
   const [newPoint, setNewPoint] = useState<LatLng | null>(null);
+  const [editingPoint, setEditingPoint] = useState<
+    TimingPointEditorProps["timingPoints"][0] | null
+  >(null);
+  const fetcher = useFetcher();
 
   if (!width || !height || width === 0 || height === 0)
     return null; // You can only render the map once, subsequent re-renders won't do anything - so we need to wait until we have the viewport size
   else
     return (
-      <div style={{ height: height, width: width }}>
-        <MapContainer
-          zoom={13}
-          center={[51.505, -0.09]}
-          scrollWheelZoom={false}
-          style={{
-            height: `${height}px`,
-            width: `${width}px`,
-            zIndex: 0,
-          }}
-          attributionControl={false}
-        >
-          <NewPointCreator newPoint={newPoint} setNewPoint={setNewPoint} />
-          <TileLayer
-            attribution='Map &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <AttributionControl
-            position="bottomright"
-            prefix={`
+      <div style={{ display: "flex", height: height, width: width }}>
+        <div style={{ flexGrow: 1 }}>
+          <MapContainer
+            zoom={13}
+            center={[51.505, -0.09]}
+            scrollWheelZoom={false}
+            style={{
+              height: `100%`,
+              width: `100%`,
+              zIndex: 0,
+            }}
+            attributionControl={false}
+          >
+            <NewPointCreator newPoint={newPoint} setNewPoint={setNewPoint} />
+            <TileLayer
+              attribution='Map &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <AttributionControl
+              position="bottomright"
+              prefix={`
               <a href="https://leafletjs.com" title="A JavaScript library for interactive maps" target="_blank" rel="noopener noreferrer">
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet
               </a>`}
-          />
-          {props.timingPoints.map((pin, index) => (
-            <>
-              <Marker
-                key={index}
-                position={[pin.latitude, pin.longitude]}
-                icon={tablerMapIcon(
-                  <ThemeIcon radius="xl" size="sm" color="orange">
-                    <IconPinned style={{ width: "70%", height: "70%" }} />
-                  </ThemeIcon>
-                )}
-              >
-                <Popup>
-                  <Text>{pin.name}</Text>
-                  <Text>Radius: {pin.radius}m</Text>
-                  <Text>
-                    Applicable Dates: {pin.applicableDates.join(", ")}
-                  </Text>
-                  <Text>Order: {pin.order}</Text>
-                </Popup>
+            />
+            {props.timingPoints.map((pin, index) => (
+              <>
+                <Marker
+                  key={index}
+                  position={[pin.latitude, pin.longitude]}
+                  icon={tablerMapIcon(
+                    <ThemeIcon radius="xl" size="sm" color="orange">
+                      <IconPinned style={{ width: "70%", height: "70%" }} />
+                    </ThemeIcon>
+                  )}
+                >
+                  <Popup>
+                    <Text>{pin.name}</Text>
+                    <Text>Radius: {pin.radius}m</Text>
+                    <Text>
+                      Applicable Dates:{" "}
+                      {pin.applicableDates
+                        ? pin.applicableDates.join(", ")
+                        : "None"}
+                    </Text>
+                    <Text>Order: {pin.order}</Text>
+                  </Popup>
+                </Marker>
+                <Circle
+                  center={[pin.latitude, pin.longitude]}
+                  radius={pin.radius}
+                  pathOptions={{ color: "blue" }}
+                />
+              </>
+            ))}
+            {newPoint && (
+              <Marker position={newPoint}>
+                <Popup>New Timing Point Location</Popup>
               </Marker>
-              <Circle
-                center={[pin.latitude, pin.longitude]}
-                radius={pin.radius}
-                pathOptions={{ color: "blue" }}
+            )}
+          </MapContainer>
+        </div>
+        <div
+          style={{
+            width: "300px",
+            height: "100%",
+            overflowY: "auto",
+            padding: "1rem",
+          }}
+        >
+          <List>
+            {props.timingPoints.map((point) => (
+              <List.Item key={point.id}>
+                <Group>
+                  <Text>{point.name}</Text>
+                  <Button onClick={() => setEditingPoint(point)}>Edit</Button>
+                  <fetcher.Form method="delete" action="/timingPointEditor">
+                    <input type="hidden" name="id" value={point.id} />
+                    <Button type="submit" color="red">
+                      <IconTrash />
+                    </Button>
+                  </fetcher.Form>
+                </Group>
+              </List.Item>
+            ))}
+          </List>
+        </div>
+        {editingPoint && (
+          <Modal
+            opened={editingPoint !== null}
+            onClose={() => setEditingPoint(null)}
+            title="Edit Timing Point"
+          >
+            <fetcher.Form method="put" action="/timingPointEditor">
+              <input type="hidden" name="id" value={editingPoint.id} />
+              <TextInput
+                label="Name"
+                name="name"
+                defaultValue={editingPoint.name}
               />
-            </>
-          ))}
-          {newPoint && (
-            <Marker position={newPoint}>
-              <Popup>New Timing Point Location</Popup>
-            </Marker>
-          )}
-        </MapContainer>
+              <NumberInput
+                label="Radius"
+                name="radius"
+                defaultValue={editingPoint.radius}
+              />
+              <NumberInput
+                label="Order"
+                name="order"
+                defaultValue={editingPoint.order}
+              />
+              <TextInput
+                label="Applicable Dates (comma separated)"
+                name="applicableDates"
+                defaultValue={
+                  editingPoint.applicableDates
+                    ? editingPoint.applicableDates.join(",")
+                    : ""
+                }
+              />
+              <Button type="submit">Save</Button>
+            </fetcher.Form>
+          </Modal>
+        )}
       </div>
     );
 };
