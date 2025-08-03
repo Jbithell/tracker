@@ -203,7 +203,7 @@ export const Map = (props: MapProps) => {
                   return null;
                 })()}
                 {DateTime.fromSeconds(highestTimestampPin.timestamp / 1000, {
-                  zone: "local",
+                  zone: "Europe/London",
                 }).toLocaleString(DateTime.DATETIME_MED)}
               </Text>
               <Link

@@ -9,7 +9,6 @@ import { and, desc, gte, lt, lte, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { Link, useFetcher, type MetaFunction } from "react-router";
-import { ClientOnly } from "remix-utils/client-only";
 import { Events } from "~/database/schema/Events";
 import type { Route } from "./+types/table";
 
@@ -25,7 +24,7 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
     : DateTime.now().toUTC();
   refDate = refDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
   const urlDate = refDate.toFormat("yyyy-MM-dd");
-  
+
   const events = await context.db
     .select({
       timestamp: Events.timestamp,
@@ -122,13 +121,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
               {events.map((event) => (
                 <Table.Tr key={event.id}>
                   <Table.Td>
-                    <ClientOnly>
-                      {() =>
-                        DateTime.fromSeconds(event.timestamp / 1000, {
-                          zone: "local",
-                        }).toLocaleString(DateTime.DATETIME_MED)
-                      }
-                    </ClientOnly>
+                    {DateTime.fromSeconds(event.timestamp / 1000, {
+                      zone: "Europe/London",
+                    }).toLocaleString(DateTime.DATETIME_MED)}
                   </Table.Td>
                   <Table.Td>{event.data.location.latitude}</Table.Td>
                   <Table.Td>{event.data.location.longitude}</Table.Td>

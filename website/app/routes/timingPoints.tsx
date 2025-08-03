@@ -3,7 +3,6 @@ import { IconChevronLeft, IconList } from "@tabler/icons-react";
 import { and, asc, between, eq, or, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { Link, type MetaFunction } from "react-router";
-import { ClientOnly } from "remix-utils/client-only";
 import * as Schema from "~/database/schema.d";
 import type { Route } from "./+types/timingPoints";
 
@@ -185,13 +184,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       <Table.Tr key={event.id}>
                         <Table.Td>{event.type}</Table.Td>
                         <Table.Td>
-                          <ClientOnly>
-                            {() =>
-                              DateTime.fromSeconds(event.timestamp / 1000, {
-                                zone: "local",
-                              }).toLocaleString(DateTime.DATETIME_MED)
-                            }
-                          </ClientOnly>
+                          {DateTime.fromSeconds(event.timestamp / 1000, {
+                            zone: "Europe/London",
+                          }).toLocaleString(DateTime.DATETIME_MED)}
                         </Table.Td>
                       </Table.Tr>
                     ))}
