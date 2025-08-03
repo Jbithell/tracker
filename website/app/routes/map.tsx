@@ -1,6 +1,6 @@
 import { Center, Stack, Title } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { and, asc, desc, gte, lte, sql } from "drizzle-orm";
+import { and, desc, gte, lte, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { useNavigate, type MetaFunction } from "react-router";
 import { LiveMap } from "~/components/LiveMap/LiveMap";
@@ -38,12 +38,12 @@ export async function loader({ context, params }: Route.LoaderArgs) {
       latitude: Schema.TimingPoints.latitude,
       longitude: Schema.TimingPoints.longitude,
     })
-    .from(Schema.TimingPoints)
-    .orderBy(asc(Schema.TimingPoints.order)).where(sql`EXISTS (
+    .from(Schema.TimingPoints).where(sql`EXISTS (
       SELECT 1
       FROM json_each(${Schema.TimingPoints.applicableDates})
       WHERE value = ${urlDate}
     )`); // Selects only timing points that are applicable for the current date
+  // No point having an order by given that it's a map
 
   return {
     date: refDate.toISO(),
