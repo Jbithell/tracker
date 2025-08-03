@@ -162,42 +162,81 @@ export default function Page({ loaderData }: Route.ComponentProps) {
       {loaderData.timingPoints.length === 0 ? (
         <Title>No data available</Title>
       ) : (
-        <>
-          {loaderData.timingPoints.map((timingPoint) => {
-            const events = JSON.parse(timingPoint.events) as {
-              id: number;
-              timestamp: number;
-              type: "passage" | "arrival" | "departure";
-            }[];
-            return (
-              <div key={timingPoint.timing_point_id}>
-                <Title order={3}>{timingPoint.name}</Title>
-                <Table striped>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Type</Table.Th>
-                      <Table.Th>Time</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {events.map((event) => (
-                      <Table.Tr
-                        key={`${timingPoint.timing_point_id}-${event.timestamp}-${event.type}`}
-                      >
-                        <Table.Td>{event.type}</Table.Td>
-                        <Table.Td>
-                          {DateTime.fromSeconds(event.timestamp / 1000, {
-                            zone: "Europe/London",
-                          }).toLocaleString(DateTime.DATETIME_MED)}
-                        </Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              </div>
-            );
-          })}
-        </>
+        <Table striped highlightOnHover stickyHeader stickyHeaderOffset={0}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Location</Table.Th>
+              <Table.Th>Arrived</Table.Th>
+              <Table.Th>Departed</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {loaderData.timingPoints.map((timingPoint) => {
+              const events = JSON.parse(timingPoint.events) as {
+                id: number;
+                timestamp: number;
+                type: "passage" | "arrival" | "departure";
+              }[];
+              return (
+                <Table.Tr key={timingPoint.timing_point_id}>
+                  <Table.Td>{timingPoint.name}</Table.Td>
+                  {events.length === 0 && <Table.Td colSpan={2}></Table.Td>}
+                  {events.length === 1 && events[0].type === "passage" && (
+                    <Table.Td colSpan={2}>
+                      {DateTime.fromSeconds(events[0].timestamp / 1000, {
+                        zone: "Europe/London",
+                      }).toLocaleString(DateTime.TIME_24_SIMPLE)}
+                    </Table.Td>
+                  )}
+                  {events.length === 2 && (
+                    <>
+                      {(() => {
+                        const arrivalEvent = events.find(
+                          (event) => event.type === "arrival"
+                        );
+                        const departureEvent = events.find(
+                          (event) => event.type === "departure"
+                        );
+                        if (!arrivalEvent || !departureEvent) {
+                          return <Table.Td colSpan={2}></Table.Td>;
+                        }
+                        if (
+                          (departureEvent?.timestamp ?? 0) -
+                            (arrivalEvent?.timestamp ?? 0) <=
+                          1000 * 120 // 2 minutes
+                        )
+                          return (
+                            <Table.Td colSpan={2}>
+                              {DateTime.fromSeconds(
+                                arrivalEvent.timestamp / 1000,
+                                { zone: "Europe/London" }
+                              ).toLocaleString(DateTime.TIME_24_SIMPLE)}
+                            </Table.Td>
+                          ); // If the difference between the arrival and departure times is less than 2 minutes, then just show the arrival time
+                        return (
+                          <>
+                            <Table.Td>
+                              {DateTime.fromSeconds(
+                                arrivalEvent.timestamp / 1000,
+                                { zone: "Europe/London" }
+                              ).toLocaleString(DateTime.TIME_24_SIMPLE)}
+                            </Table.Td>
+                            <Table.Td>
+                              {DateTime.fromSeconds(
+                                departureEvent.timestamp / 1000,
+                                { zone: "Europe/London" }
+                              ).toLocaleString(DateTime.TIME_24_SIMPLE)}
+                            </Table.Td>
+                          </>
+                        );
+                      })()}
+                    </>
+                  )}
+                </Table.Tr>
+              );
+            })}
+          </Table.Tbody>
+        </Table>
       )}
     </Container>
   );
