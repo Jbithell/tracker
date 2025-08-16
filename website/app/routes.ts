@@ -12,6 +12,7 @@ export default [
   ...prefix(":date?", [
     route("table/:cursor?", "./routes/table.tsx"),
     route("timings", "./routes/timingPoints.tsx"),
+    route("timingsHistoric", "./routes/timingPointsHistoric.tsx"),
     route("export.gpx", "./routes/downloadGPX.ts"),
     index("./routes/map.tsx"),
   ]),

@@ -1,10 +1,10 @@
 import { Button, Container, Group, Table, Title } from "@mantine/core";
-import { IconChevronLeft, IconList } from "@tabler/icons-react";
+import { IconChevronLeft } from "@tabler/icons-react";
 import { and, asc, between, eq, or, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { Link, type MetaFunction } from "react-router";
 import * as Schema from "~/database/schema.d";
-import type { Route } from "./+types/timingPoints";
+import type { Route } from "./+types/timingPointsHistoric";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Timing Points" }];
@@ -149,20 +149,6 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           to={`/${loaderData.date}`}
         >
           Back to Map
-        </Button>
-        <Button
-          leftSection={<IconList />}
-          href={`/${loaderData.date}/table`}
-          component="a"
-        >
-          View Full History
-        </Button>
-        <Button
-          leftSection={<IconList />}
-          href={`/${loaderData.date}/timingsHistoric`}
-          component="a"
-        >
-          Compare to Other Dates
         </Button>
         <Title order={1}>History at Timing Points</Title>
       </Group>
