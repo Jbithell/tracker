@@ -4,7 +4,7 @@ import { asc, eq, or, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { Link, type MetaFunction } from "react-router";
 import * as Schema from "~/database/schema.d";
-import type { Route } from "./+types/timingPointsHistoric";
+import type { Route } from "./+types/timingPointsHistoricComparison";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Timing Points" }];

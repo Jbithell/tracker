@@ -1,5 +1,12 @@
-import { Button, Container, Group, Table, Title } from "@mantine/core";
-import { IconChevronLeft, IconHistory, IconList } from "@tabler/icons-react";
+import { Anchor, Button, Container, Group, Table, Title } from "@mantine/core";
+import {
+  IconChevronLeft,
+  IconCoffee,
+  IconGasStation,
+  IconHistory,
+  IconList,
+  IconTrain,
+} from "@tabler/icons-react";
 import { and, asc, between, eq, or, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { Link, type MetaFunction } from "react-router";
@@ -25,8 +32,12 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
     context.db
       .select({
         id: Schema.TimingPoints.id,
-        name: Schema.TimingPoints.name,
         order: Schema.TimingPoints.order,
+        name: Schema.TimingPoints.name,
+        icon: Schema.TimingPoints.icon,
+        googleLink: Schema.TimingPoints.googleLink,
+        latitude: Schema.TimingPoints.latitude,
+        longitude: Schema.TimingPoints.longitude,
       })
       .from(Schema.TimingPoints)
       .where(
@@ -61,7 +72,6 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
     context.db
       .select({
         timing_point_id: Schema.TimingPoints.id,
-        name: Schema.TimingPoints.name,
         order: Schema.TimingPoints.order,
         event_id: dailyEvents.id,
         timestamp: dailyEvents.timestamp,
@@ -99,7 +109,6 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
     context.db
       .select({
         timing_point_id: matchingEvents.timing_point_id,
-        name: matchingEvents.name,
         order: matchingEvents.order,
         event_id: matchingEvents.event_id,
         timestamp: matchingEvents.timestamp,
@@ -152,6 +161,10 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
       timing_point_id: selectedTimingPoints.id,
       name: selectedTimingPoints.name,
       order: selectedTimingPoints.order,
+      icon: selectedTimingPoints.icon,
+      googleLink: selectedTimingPoints.googleLink,
+      latitude: selectedTimingPoints.latitude,
+      longitude: selectedTimingPoints.longitude,
       events: sql<string>`coalesce(${aggregatedEvents.events}, '[]')`.as(
         "events"
       ),
@@ -169,6 +182,10 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
       name: string;
       order: number;
       events: string;
+      icon: string | null;
+      googleLink: string | null;
+      latitude: number;
+      longitude: number;
     }[],
     date: urlDate,
   };
@@ -221,7 +238,28 @@ export default function Page({ loaderData }: Route.ComponentProps) {
               }[];
               return (
                 <Table.Tr key={timingPoint.timing_point_id}>
-                  <Table.Td>{timingPoint.name}</Table.Td>
+                  <Table.Td>
+                    <Group justify="flex-start">
+                      {timingPoint.icon === "IconCoffee" ? (
+                        <IconCoffee />
+                      ) : timingPoint.icon === "IconGasStation" ? (
+                        <IconGasStation />
+                      ) : timingPoint.icon === "IconTrain" ? (
+                        <IconTrain />
+                      ) : null}
+                      <Anchor
+                        c="inherit"
+                        component={Link}
+                        to={
+                          timingPoint.googleLink ??
+                          `https://www.google.com/maps?q=${timingPoint.latitude},${timingPoint.longitude}`
+                        }
+                        target="_blank"
+                      >
+                        {timingPoint.name}
+                      </Anchor>
+                    </Group>
+                  </Table.Td>
                   {events.length === 0 && <Table.Td colSpan={2}></Table.Td>}
                   {events.length === 1 && events[0].type === "passage" && (
                     <Table.Td colSpan={2}>
