@@ -20,6 +20,23 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
   const startOfDay = refDate.startOf("day").toMillis();
   const endOfDay = refDate.endOf("day").toMillis();
 
+  // All timing points applicable on the chosen date
+  const selectedTimingPoints = context.db.$with("selected_timing_points").as(
+    context.db
+      .select({
+        id: Schema.TimingPoints.id,
+        name: Schema.TimingPoints.name,
+        order: Schema.TimingPoints.order,
+      })
+      .from(Schema.TimingPoints)
+      .where(
+        sql`EXISTS (
+          SELECT 1 FROM json_each(${Schema.TimingPoints.applicableDates})
+          WHERE value = ${urlDate}
+        )`
+      )
+  );
+
   // Get all events for the day
   const dailyEvents = context.db.$with("daily_events").as(
     context.db
@@ -102,31 +119,49 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
       .from(matchingEvents)
   );
 
-  // Actually run the query
-  const timingPointsWithEvents = await context.db
-    .with(dailyEvents, matchingEvents, rankedEvents)
-    .select({
-      timing_point_id: rankedEvents.timing_point_id,
-      name: rankedEvents.name,
-      order: rankedEvents.order,
-      events:
-        sql<string>`json_group_array(json_object('id', ${rankedEvents.event_id}, 'timestamp', ${rankedEvents.timestamp}, 'type', CASE WHEN ${rankedEvents.event_count} = 1 THEN 'passage' WHEN ${rankedEvents.row_number_asc} = 1 THEN 'arrival' WHEN ${rankedEvents.row_number_desc} = 1 THEN 'departure' END))`.as(
-          "events"
-        ),
-    })
-    .from(rankedEvents)
-    .where(
-      or(
-        eq(rankedEvents.row_number_asc, 1),
-        eq(rankedEvents.row_number_desc, 1)
+  // Aggregate events per timing point (arrival/departure/passage only)
+  const aggregatedEvents = context.db.$with("aggregated_events").as(
+    context.db
+      .select({
+        timing_point_id: rankedEvents.timing_point_id,
+        events:
+          sql<string>`json_group_array(json_object('id', ${rankedEvents.event_id}, 'timestamp', ${rankedEvents.timestamp}, 'type', CASE WHEN ${rankedEvents.event_count} = 1 THEN 'passage' WHEN ${rankedEvents.row_number_asc} = 1 THEN 'arrival' WHEN ${rankedEvents.row_number_desc} = 1 THEN 'departure' END))`.as(
+            "events"
+          ),
+      })
+      .from(rankedEvents)
+      .where(
+        or(
+          eq(rankedEvents.row_number_asc, 1),
+          eq(rankedEvents.row_number_desc, 1)
+        )
       )
+      .groupBy(rankedEvents.timing_point_id)
+  );
+
+  // Return all applicable timing points; include empty events where none matched
+  const timingPointsWithEvents = await context.db
+    .with(
+      selectedTimingPoints,
+      dailyEvents,
+      matchingEvents,
+      rankedEvents,
+      aggregatedEvents
     )
-    .groupBy(
-      rankedEvents.timing_point_id,
-      rankedEvents.name,
-      rankedEvents.order
+    .select({
+      timing_point_id: selectedTimingPoints.id,
+      name: selectedTimingPoints.name,
+      order: selectedTimingPoints.order,
+      events: sql<string>`coalesce(${aggregatedEvents.events}, '[]')`.as(
+        "events"
+      ),
+    })
+    .from(selectedTimingPoints)
+    .leftJoin(
+      aggregatedEvents,
+      eq(selectedTimingPoints.id, aggregatedEvents.timing_point_id)
     )
-    .orderBy(asc(rankedEvents.order));
+    .orderBy(asc(selectedTimingPoints.order));
 
   return {
     timingPoints: timingPointsWithEvents as {
