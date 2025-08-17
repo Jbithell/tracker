@@ -1,4 +1,5 @@
-import { integer,real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const TimingPoints = sqliteTable("timing_points", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
@@ -10,4 +11,7 @@ export const TimingPoints = sqliteTable("timing_points", {
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
   radius: integer("radius", { mode: "number" }).default(10).notNull(), // Metres
+  icon: text("icon", { mode: "text" }).default(sql`NULL`),
+  googleLink: text("google_link", { mode: "text" }).default(sql`NULL`),
+  group: text("group", { mode: "text" }).default("Other Timing Points"),
 });

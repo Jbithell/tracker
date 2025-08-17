@@ -1,13 +1,17 @@
 import { Button, Group, MantineProvider, Text, ThemeIcon } from "@mantine/core";
 import { useViewportSize } from "@mantine/hooks";
 import {
+  IconBeerFilled,
   IconBrandApple,
   IconBrandGoogleMaps,
   IconCar,
+  IconCoffee,
   IconCompass,
   IconCurrentLocation,
+  IconGasStationFilled,
   IconPinned,
   IconRefresh,
+  IconTrainFilled,
 } from "@tabler/icons-react";
 import { DivIcon, divIcon, LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -108,6 +112,13 @@ export const Map = (props: MapProps) => {
     return currentPin.timestamp > maxPin.timestamp ? currentPin : maxPin;
   }, props.pins[0]);
 
+  const groupedTimingPoints = props.timingPoints.reduce((acc, timingPoint) => {
+    const groupName = timingPoint.group ?? "Other Timing Points";
+    if (!acc[groupName]) acc[groupName] = [];
+    acc[groupName].push(timingPoint);
+    return acc;
+  }, {} as Record<string, Array<(typeof props.timingPoints)[number]>>);
+
   if (!width || !height || width === 0 || height === 0)
     return null; // You can only render the map once, subsequent re-renders won't do anything - so we need to wait until we have the viewport size
   else
@@ -191,7 +202,7 @@ export const Map = (props: MapProps) => {
               >
                 <Button
                   size="xs"
-                  m="xs"
+                  mb="xs"
                   rightSection={
                     <IconBrandGoogleMaps
                       style={{ width: "70%", height: "70%" }}
@@ -207,7 +218,6 @@ export const Map = (props: MapProps) => {
               >
                 <Button
                   size="xs"
-                  m="xs"
                   rightSection={
                     <IconBrandApple style={{ width: "70%", height: "70%" }} />
                   }
@@ -218,6 +228,85 @@ export const Map = (props: MapProps) => {
             </Popup>
           </Marker>
           <LayersControl position="bottomleft">
+            {Object.entries(groupedTimingPoints).map(([groupName, points]) => (
+              <LayersControl.Overlay
+                name={groupName}
+                key={groupName}
+                checked={true}
+              >
+                <LayerGroup>
+                  {points.map((timingPoint, index) => (
+                    <Marker
+                      key={`${groupName}-${index}`}
+                      position={[timingPoint.latitude, timingPoint.longitude]}
+                      icon={tablerMapIcon(
+                        <ThemeIcon radius="xl" size="sm" color="orange">
+                          {timingPoint.icon === "IconBeer" ? (
+                            <IconBeerFilled
+                              style={{ width: "70%", height: "70%" }}
+                            />
+                          ) : timingPoint.icon === "IconCoffee" ? (
+                            <IconCoffee
+                              style={{ width: "70%", height: "70%" }}
+                            />
+                          ) : timingPoint.icon === "IconGasStation" ? (
+                            <IconGasStationFilled
+                              style={{ width: "70%", height: "70%" }}
+                            />
+                          ) : timingPoint.icon === "IconTrain" ? (
+                            <IconTrainFilled
+                              style={{ width: "70%", height: "70%" }}
+                            />
+                          ) : (
+                            <IconPinned
+                              style={{ width: "70%", height: "70%" }}
+                            />
+                          )}
+                        </ThemeIcon>
+                      )}
+                    >
+                      <Popup>
+                        <Text>{timingPoint.name}</Text>
+                        <Link
+                          to={
+                            timingPoint.googleLink ??
+                            `https://www.google.com/maps?q=${timingPoint.latitude},${timingPoint.longitude}`
+                          }
+                          target="_blank"
+                        >
+                          <Button
+                            size="xs"
+                            mb="xs"
+                            rightSection={
+                              <IconBrandGoogleMaps
+                                style={{ width: "70%", height: "70%" }}
+                              />
+                            }
+                          >
+                            Open location in Google Maps
+                          </Button>
+                        </Link>
+                        <Link
+                          to={`https://maps.apple.com/?q=${timingPoint.latitude},${timingPoint.longitude}`}
+                          target="_blank"
+                        >
+                          <Button
+                            size="xs"
+                            rightSection={
+                              <IconBrandApple
+                                style={{ width: "70%", height: "70%" }}
+                              />
+                            }
+                          >
+                            Open location in Apple Maps
+                          </Button>
+                        </Link>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </LayerGroup>
+              </LayersControl.Overlay>
+            ))}
             <LayersControl.Overlay name="History" checked={true}>
               <Polyline
                 positions={uniquePins.map((pin) => [
@@ -227,25 +316,6 @@ export const Map = (props: MapProps) => {
                 color={"red"}
                 smoothFactor={10}
               />
-            </LayersControl.Overlay>
-            <LayersControl.Overlay name="Timing Points">
-              <LayerGroup>
-                {props.timingPoints.map((pin, index) => (
-                  <Marker
-                    key={index}
-                    position={[pin.latitude, pin.longitude]}
-                    icon={tablerMapIcon(
-                      <ThemeIcon radius="xl" size="sm" color="orange">
-                        <IconPinned style={{ width: "70%", height: "70%" }} />
-                      </ThemeIcon>
-                    )}
-                  >
-                    <Popup>
-                      <Text>{pin.name}</Text>
-                    </Popup>
-                  </Marker>
-                ))}
-              </LayerGroup>
             </LayersControl.Overlay>
           </LayersControl>
           <div className="leaflet-top leaflet-right">

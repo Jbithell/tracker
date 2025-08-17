@@ -37,6 +37,9 @@ export async function loader({ context, params }: Route.LoaderArgs) {
       name: Schema.TimingPoints.name,
       latitude: Schema.TimingPoints.latitude,
       longitude: Schema.TimingPoints.longitude,
+      group: Schema.TimingPoints.group,
+      icon: Schema.TimingPoints.icon,
+      googleLink: Schema.TimingPoints.googleLink,
     })
     .from(Schema.TimingPoints).where(sql`EXISTS (
       SELECT 1

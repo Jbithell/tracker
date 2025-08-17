@@ -13,6 +13,9 @@ export interface MapProps {
     name: string;
     latitude: number;
     longitude: number;
+    icon: string | null;
+    googleLink: string | null;
+    group: string | null;
   }[];
 }
 export const LiveMap = (props: MapProps) => (
