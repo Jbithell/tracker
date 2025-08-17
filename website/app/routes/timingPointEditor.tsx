@@ -1,4 +1,5 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
+import { DateTime } from "luxon";
 import { type MetaFunction } from "react-router";
 import { TimingPointEditor } from "~/components/TimingPointEditor/TimingPointEditor";
 import * as Schema from "~/database/schema.d";
@@ -8,12 +9,35 @@ export const meta: MetaFunction = () => {
   return [{ title: "Timing Point Editor" }];
 };
 
-export async function loader({ context, request, params }: Route.LoaderArgs) {
+export async function loader({ context, params }: Route.LoaderArgs) {
+  let refDate = params.date
+    ? DateTime.fromFormat(params.date, "yyyy-MM-dd", { zone: "utc" })
+    : DateTime.now().toUTC();
+  refDate = refDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+  const urlDate = refDate.toFormat("yyyy-MM-dd");
+
+  const events = await context.db
+    .select({
+      timestamp: Schema.Events.timestamp,
+      data: Schema.Events.data,
+    })
+    .from(Schema.Events)
+    .orderBy(desc(Schema.Events.timestamp))
+    .where(
+      and(
+        gte(Schema.Events.timestamp, refDate.toMillis()),
+        lte(Schema.Events.timestamp, refDate.toMillis() + 86400000) // 24 hours
+      )
+    );
   const timingPoints = await context.db
     .select()
     .from(Schema.TimingPoints)
     .orderBy(asc(Schema.TimingPoints.order));
+
   return {
+    date: refDate.toISO(),
+    events,
+    urlDate,
     timingPoints,
   };
 }
@@ -61,5 +85,20 @@ export async function action({ context, request }: Route.ActionArgs) {
 }
 
 export default function Page({ loaderData }: Route.ComponentProps) {
-  return <TimingPointEditor timingPoints={loaderData.timingPoints} />;
+  return (
+    <TimingPointEditor
+      timingPoints={loaderData.timingPoints}
+      pins={loaderData.events
+        .filter(
+          (event) =>
+            "latitude" in event.data.location &&
+            "longitude" in event.data.location
+        )
+        .map((event) => ({
+          latitude: event.data.location.latitude,
+          longitude: event.data.location.longitude,
+          timestamp: event.timestamp,
+        }))}
+    />
+  );
 }

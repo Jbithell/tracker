@@ -20,6 +20,7 @@ import {
   Circle,
   MapContainer,
   Marker,
+  Polyline,
   Popup,
   TileLayer,
   useMapEvents,
@@ -104,6 +105,16 @@ export const TimingPointEditor = (props: TimingPointEditorProps) => {
   >(null);
   const fetcher = useFetcher();
 
+  const uniquePins = Object.values(
+    props.pins.reduce((acc, pin) => {
+      const key = `${pin.latitude.toFixed(7)},${pin.longitude.toFixed(7)}`;
+      if (!acc[key] || acc[key].timestamp < pin.timestamp) {
+        acc[key] = pin;
+      }
+      return acc;
+    }, {} as Record<string, (typeof props.pins)[0]>)
+  );
+
   if (!width || !height || width === 0 || height === 0)
     return null; // You can only render the map once, subsequent re-renders won't do anything - so we need to wait until we have the viewport size
   else
@@ -122,9 +133,15 @@ export const TimingPointEditor = (props: TimingPointEditorProps) => {
             attributionControl={false}
           >
             <NewPointCreator newPoint={newPoint} setNewPoint={setNewPoint} />
-            <TileLayer
+            {/* <TileLayer
               attribution='Map &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            /> */}
+            <TileLayer
+              url="https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+              maxZoom={20}
+              subdomains={["mt1", "mt2", "mt3"]}
+              attribution="Map &copy; Google"
             />
             <AttributionControl
               position="bottomright"
@@ -163,6 +180,16 @@ export const TimingPointEditor = (props: TimingPointEditorProps) => {
                 />
               </>
             ))}
+            {uniquePins.length > 0 && (
+              <Polyline
+                positions={uniquePins.map((pin) => [
+                  pin.latitude,
+                  pin.longitude,
+                ])}
+                color={"red"}
+                smoothFactor={10}
+              />
+            )}
             {newPoint && (
               <Marker position={newPoint}>
                 <Popup>New Timing Point Location</Popup>

@@ -5,6 +5,11 @@ import * as Schema from "~/database/schema.d";
 import { TimingPointEditor as TimingPointEditorClient } from "./TimingPointEditor.client";
 export interface TimingPointEditorProps {
   timingPoints: InferSelectModel<typeof Schema.TimingPoints>[];
+  pins: {
+    latitude: number;
+    longitude: number;
+    timestamp: number;
+  }[];
 }
 export const TimingPointEditor = (props: TimingPointEditorProps) => (
   <ClientOnly fallback={<Center></Center>}>

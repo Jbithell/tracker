@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   AttributionControl,
+  LayerGroup,
+  LayersControl,
   MapContainer,
   Marker,
   Polyline,
@@ -143,11 +145,6 @@ export const Map = (props: MapProps) => {
               </ThemeIcon>
             )}
           />
-          <Polyline
-            positions={uniquePins.map((pin) => [pin.latitude, pin.longitude])}
-            color={"red"}
-            smoothFactor={10}
-          />
           <Marker
             position={[
               highestTimestampPin.latitude,
@@ -220,21 +217,37 @@ export const Map = (props: MapProps) => {
               </Link>
             </Popup>
           </Marker>
-          {props.timingPoints.map((pin, index) => (
-            <Marker
-              key={index}
-              position={[pin.latitude, pin.longitude]}
-              icon={tablerMapIcon(
-                <ThemeIcon radius="xl" size="sm" color="orange">
-                  <IconPinned style={{ width: "70%", height: "70%" }} />
-                </ThemeIcon>
-              )}
-            >
-              <Popup>
-                <Text>{pin.name}</Text>
-              </Popup>
-            </Marker>
-          ))}
+          <LayersControl position="bottomleft">
+            <LayersControl.Overlay name="History" checked={true}>
+              <Polyline
+                positions={uniquePins.map((pin) => [
+                  pin.latitude,
+                  pin.longitude,
+                ])}
+                color={"red"}
+                smoothFactor={10}
+              />
+            </LayersControl.Overlay>
+            <LayersControl.Overlay name="Timing Points">
+              <LayerGroup>
+                {props.timingPoints.map((pin, index) => (
+                  <Marker
+                    key={index}
+                    position={[pin.latitude, pin.longitude]}
+                    icon={tablerMapIcon(
+                      <ThemeIcon radius="xl" size="sm" color="orange">
+                        <IconPinned style={{ width: "70%", height: "70%" }} />
+                      </ThemeIcon>
+                    )}
+                  >
+                    <Popup>
+                      <Text>{pin.name}</Text>
+                    </Popup>
+                  </Marker>
+                ))}
+              </LayerGroup>
+            </LayersControl.Overlay>
+          </LayersControl>
           <div className="leaflet-top leaflet-right">
             <div className="leaflet-control leaflet-bar">
               <Group>
