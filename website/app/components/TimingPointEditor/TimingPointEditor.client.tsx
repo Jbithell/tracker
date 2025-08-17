@@ -133,16 +133,16 @@ export const TimingPointEditor = (props: TimingPointEditorProps) => {
             attributionControl={false}
           >
             <NewPointCreator newPoint={newPoint} setNewPoint={setNewPoint} />
-            {/* <TileLayer
+            <TileLayer
               attribution='Map &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            /> */}
-            <TileLayer
+            />
+            {/*<TileLayer
               url="https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
               maxZoom={20}
               subdomains={["mt1", "mt2", "mt3"]}
               attribution="Map &copy; Google"
-            />
+            />*/}
             <AttributionControl
               position="bottomright"
               prefix={`
