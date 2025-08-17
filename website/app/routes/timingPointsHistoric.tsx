@@ -158,13 +158,95 @@ export async function loader({ context, request, params }: Route.LoaderArgs) {
     )
     .orderBy(asc(rankedEvents.order), asc(rankedEvents.date));
 
+  // Also fetch all timing points applicable to the selected date (even if no events)
+  const applicableTimingPoints = await context.db
+    .with(selectedTimingPoints)
+    .select({
+      id: selectedTimingPoints.id,
+      name: selectedTimingPoints.name,
+      order: selectedTimingPoints.order,
+      applicableDates: selectedTimingPoints.applicableDates,
+    })
+    .from(selectedTimingPoints)
+    .orderBy(asc(selectedTimingPoints.order));
+
+  // Pre-compute date columns and grouped rows server-side
+  const dates = Array.from(
+    new Set((timingPointsByDate as { date: string }[]).map((r) => r.date))
+  ).sort();
+
+  const grouped: Record<
+    number,
+    {
+      name: string;
+      order: number;
+      byDate: Record<
+        string,
+        {
+          id: number;
+          timestamp: number;
+          type: "passage" | "arrival" | "departure";
+        }[]
+      >;
+    }
+  > = {};
+
+  for (const row of timingPointsByDate as {
+    timing_point_id: number;
+    name: string;
+    order: number;
+    date: string;
+    events: string;
+  }[]) {
+    const events = JSON.parse(row.events) as {
+      id: number;
+      timestamp: number;
+      type: "passage" | "arrival" | "departure";
+    }[];
+    if (!grouped[row.timing_point_id]) {
+      grouped[row.timing_point_id] = {
+        name: row.name,
+        order: row.order,
+        byDate: {},
+      };
+    }
+    grouped[row.timing_point_id].byDate[row.date] = events;
+  }
+
+  // Ensure timing points with no events are included
+  for (const tp of applicableTimingPoints as {
+    id: number;
+    name: string;
+    order: number;
+  }[]) {
+    if (!grouped[tp.id]) {
+      grouped[tp.id] = { name: tp.name, order: tp.order, byDate: {} };
+    }
+  }
+
+  const rows = Object.entries(grouped)
+    .sort((a, b) => a[1].order - b[1].order)
+    .map(([tpId, info]) => ({
+      timing_point_id: Number(tpId),
+      name: info.name,
+      order: info.order,
+      byDate: info.byDate,
+    }));
+
   return {
-    timingPointsByDate: timingPointsByDate as {
+    dates,
+    rows: rows as {
       timing_point_id: number;
       name: string;
       order: number;
-      date: string;
-      events: string;
+      byDate: Record<
+        string,
+        {
+          id: number;
+          timestamp: number;
+          type: "passage" | "arrival" | "departure";
+        }[]
+      >;
     }[],
     date: urlDate,
   };
@@ -183,92 +265,56 @@ export default function Page({ loaderData }: Route.ComponentProps) {
         </Button>
         <Title order={1}>Compare Timing Points Across Dates</Title>
       </Group>
-      {loaderData.timingPointsByDate.length === 0 ? (
+      {loaderData.rows.length === 0 ? (
         <Title>No data available</Title>
       ) : (
         <Table striped highlightOnHover stickyHeader stickyHeaderOffset={0}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Location</Table.Th>
-              {(() => {
-                const uniqueDates = Array.from(
-                  new Set(loaderData.timingPointsByDate.map((r) => r.date))
-                ).sort();
-                return uniqueDates.flatMap((d) => [
-                  <Table.Th key={`${d}-arr`}>{d} Arrived</Table.Th>,
-                  <Table.Th key={`${d}-dep`}>{d} Departed</Table.Th>,
-                ]);
-              })()}
+              {loaderData.dates.flatMap((d: string) => [
+                <Table.Th key={`${d}-arr`}>{d} Arrived</Table.Th>,
+                <Table.Th key={`${d}-dep`}>{d} Departed</Table.Th>,
+              ])}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {(() => {
-              const uniqueDates = Array.from(
-                new Set(loaderData.timingPointsByDate.map((r) => r.date))
-              ).sort();
-              const groups = loaderData.timingPointsByDate.reduce(
-                (
-                  acc: Record<
-                    number,
-                    {
-                      name: string;
-                      order: number;
-                      byDate: Record<
-                        string,
-                        {
-                          id: number;
-                          timestamp: number;
-                          type: "passage" | "arrival" | "departure";
-                        }[]
-                      >;
-                    }
-                  >,
-                  row: {
-                    timing_point_id: number;
-                    name: string;
-                    order: number;
-                    date: string;
-                    events: string;
-                  }
-                ) => {
-                  const events = JSON.parse(row.events) as {
+            {loaderData.rows.map(
+              (row: {
+                timing_point_id: number;
+                name: string;
+                byDate: Record<
+                  string,
+                  {
                     id: number;
                     timestamp: number;
                     type: "passage" | "arrival" | "departure";
-                  }[];
-                  if (!acc[row.timing_point_id]) {
-                    acc[row.timing_point_id] = {
-                      name: row.name,
-                      order: row.order,
-                      byDate: {},
-                    };
-                  }
-                  acc[row.timing_point_id].byDate[row.date] = events;
-                  return acc;
-                },
-                {}
-              );
-              const ordered = Object.entries(groups).sort(
-                (a, b) => a[1].order - b[1].order
-              );
-              return ordered.map(([tpId, info]) => (
-                <Table.Tr key={tpId}>
-                  <Table.Td>{info.name}</Table.Td>
-                  {uniqueDates.flatMap((d) => {
-                    const events = info.byDate[d] || [];
+                  }[]
+                >;
+              }) => (
+                <Table.Tr key={row.timing_point_id}>
+                  <Table.Td>{row.name}</Table.Td>
+                  {loaderData.dates.flatMap((d: string) => {
+                    const events = row.byDate[d] || [];
                     if (events.length === 0)
                       return [
-                        <Table.Td key={`${tpId}-${d}-a`}></Table.Td>,
-                        <Table.Td key={`${tpId}-${d}-d`}></Table.Td>,
+                        <Table.Td
+                          key={`${row.timing_point_id}-${d}-a`}
+                        ></Table.Td>,
+                        <Table.Td
+                          key={`${row.timing_point_id}-${d}-d`}
+                        ></Table.Td>,
                       ];
                     if (events.length === 1 && events[0].type === "passage") {
                       return [
-                        <Table.Td key={`${tpId}-${d}-a`}>
+                        <Table.Td key={`${row.timing_point_id}-${d}-a`}>
                           {DateTime.fromSeconds(events[0].timestamp / 1000, {
                             zone: "Europe/London",
                           }).toLocaleString(DateTime.TIME_24_SIMPLE)}
                         </Table.Td>,
-                        <Table.Td key={`${tpId}-${d}-d`}></Table.Td>,
+                        <Table.Td
+                          key={`${row.timing_point_id}-${d}-d`}
+                        ></Table.Td>,
                       ];
                     }
                     const arrivalEvent = events.find(
@@ -279,8 +325,12 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                     );
                     if (!arrivalEvent || !departureEvent) {
                       return [
-                        <Table.Td key={`${tpId}-${d}-a`}></Table.Td>,
-                        <Table.Td key={`${tpId}-${d}-d`}></Table.Td>,
+                        <Table.Td
+                          key={`${row.timing_point_id}-${d}-a`}
+                        ></Table.Td>,
+                        <Table.Td
+                          key={`${row.timing_point_id}-${d}-d`}
+                        ></Table.Td>,
                       ];
                     }
                     if (
@@ -288,21 +338,23 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                       1000 * 120
                     ) {
                       return [
-                        <Table.Td key={`${tpId}-${d}-a`}>
+                        <Table.Td key={`${row.timing_point_id}-${d}-a`}>
                           {DateTime.fromSeconds(arrivalEvent.timestamp / 1000, {
                             zone: "Europe/London",
                           }).toLocaleString(DateTime.TIME_24_SIMPLE)}
                         </Table.Td>,
-                        <Table.Td key={`${tpId}-${d}-d`}></Table.Td>,
+                        <Table.Td
+                          key={`${row.timing_point_id}-${d}-d`}
+                        ></Table.Td>,
                       ];
                     }
                     return [
-                      <Table.Td key={`${tpId}-${d}-a`}>
+                      <Table.Td key={`${row.timing_point_id}-${d}-a`}>
                         {DateTime.fromSeconds(arrivalEvent.timestamp / 1000, {
                           zone: "Europe/London",
                         }).toLocaleString(DateTime.TIME_24_SIMPLE)}
                       </Table.Td>,
-                      <Table.Td key={`${tpId}-${d}-d`}>
+                      <Table.Td key={`${row.timing_point_id}-${d}-d`}>
                         {DateTime.fromSeconds(departureEvent.timestamp / 1000, {
                           zone: "Europe/London",
                         }).toLocaleString(DateTime.TIME_24_SIMPLE)}
@@ -310,8 +362,8 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                     ];
                   })}
                 </Table.Tr>
-              ));
-            })()}
+              )
+            )}
           </Table.Tbody>
         </Table>
       )}
