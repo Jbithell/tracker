@@ -1,5 +1,5 @@
 import { Button, Container, Group, Table, Title } from "@mantine/core";
-import { IconChevronLeft, IconList } from "@tabler/icons-react";
+import { IconChevronLeft, IconHistory, IconList } from "@tabler/icons-react";
 import { and, asc, between, eq, or, sql } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { Link, type MetaFunction } from "react-router";
@@ -158,7 +158,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           View Full History
         </Button>
         <Button
-          leftSection={<IconList />}
+          leftSection={<IconHistory />}
           href={`/${loaderData.date}/timingsHistoric`}
           component="a"
         >
